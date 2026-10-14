@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Feedback Collation & Caller Analytics Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <!-- Chart.js for data visualization -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- SheetJS for Excel read/write (Local and CDN fallback) -->
+  <script src="xlsx.full.min.js"></script>
+  <script>
+    if (typeof XLSX === 'undefined') {
+      document.write('<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"><\/script>');
+    }
+  </script>
+
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --secondary: #0f172a;
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --rose: #ef4444;
+      --purple: #8b5cf6;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --radius: 16px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 20px -2px rgba(15, 23, 42, 0.08);
+      --shadow-lg: 0 12px 30px -4px rgba(15, 23, 42, 0.12);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Login Modal */
+    #login-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(8px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .login-card {
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 36px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+    .login-icon {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, #2563eb, #4f46e5);
+      color: white;
+      font-size: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 16px;
+      margin: 0 auto 16px;
+      box-shadow: 0 8px 16px rgba(37, 99, 235, 0.25);
+    }
+    .login-card h2 {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+    .login-card p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+    .form-group {
+      text-align: left;
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+    .login-input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 13px;
+      font-family: inherit;
+      color: var(--text-main);
+      background: #f8fafc;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .login-input:focus {
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+    .login-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+      margin-top: 8px;
+    }
+    .login-btn:hover { background: var(--primary-hover); }
+    .demo-credentials {
+      margin-top: 20px;
+      padding: 12px;
+      background: #f1f5f9;
+      border-radius: 10px;
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: left;
+      line-height: 1.5;
+    }
+
+    /* Top Header */
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-container {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #2563eb, #4f46e5);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    }
+    .brand-text h1 {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.01em;
+    }
+    .brand-text p {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .user-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #f8fafc;
+      padding: 6px 14px;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+    }
+    .role-tag {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 100px;
+      text-transform: uppercase;
+    }
+    .role-manager { background: #dbeafe; color: #1e40af; }
+    .role-admin { background: #f3e8ff; color: #6b21a8; }
+    .logout-btn {
+      background: none;
+      border: none;
+      color: var(--rose);
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      margin-left: 6px;
+    }
+
+    /* Main Layout */
+    main {
+      max-width: 1360px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Tabs */
+    .tabs-bar {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .tab-btn:hover { background: #f1f5f9; color: var(--text-main); }
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    }
+    .badge-count {
+      background: var(--rose);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 100px;
+    }
+
+    /* Double Entry Alert Banner */
+    .dup-banner {
+      background: linear-gradient(135deg, #fff1f2, #ffe4e6);
+      border: 1px solid #fecdd3;
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+    .dup-banner-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .dup-banner-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #9f1239;
+    }
+    .dup-banner-desc {
+      font-size: 12px;
+      color: #be123c;
+      margin-top: 2px;
+    }
+
+    /* KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .kpi-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .kpi-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .kpi-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+    .kpi-val {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1;
+    }
+    .kpi-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* Cards & Tables */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .card-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: left;
+    }
+    thead th {
+      background: #f8fafc;
+      padding: 12px 16px;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    tbody td {
+      padding: 14px 16px;
+      border-bottom: 1px solid #f1f5f9;
+      color: var(--text-main);
+      vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: #f8fafc; }
+
+    /* Red Highlighting for Double Entries */
+    tr.row-duplicate {
+      background-color: #fff1f2 !important;
+      border-left: 4px solid var(--rose);
+    }
+    tr.row-duplicate td { color: #9f1239; }
+    .tag-dup {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #ffe4e6;
+      color: #be123c;
+      font-weight: 700;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid #fecdd3;
+    }
+
+    .badge-ptp { background: #dcfce7; color: #15803d; font-weight: 700; font-size: 11px; padding: 3px 8px; border-radius: 6px; }
+    .badge-rnr { background: #fef3c7; color: #b45309; font-weight: 700; font-size: 11px; padding: 3px 8px; border-radius: 6px; }
+    .badge-cb  { background: #e0e7ff; color: #4338ca; font-weight: 700; font-size: 11px; padding: 3px 8px; border-radius: 6px; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-emerald { background: var(--emerald); color: #fff; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25); }
+    .btn-emerald:hover { background: #059669; }
+    .btn-rose { background: var(--rose); color: #fff; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25); }
+    .btn-rose:hover { background: #dc2626; }
+    .btn-outline { background: #fff; border: 1px solid var(--border); color: var(--text-main); }
+    .btn-outline:hover { background: #f8fafc; }
+
+    /* Upload Zone */
+    .drop-zone {
+      border: 2px dashed #93c5fd;
+      background: #f0f7ff;
+      border-radius: var(--radius);
+      padding: 44px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .drop-zone:hover {
+      border-color: var(--primary);
+      background: #e0f2fe;
+    }
+    .drop-icon { font-size: 44px; margin-bottom: 8px; }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: flex; flex-direction: column; gap: 24px; }
+  </style>
+</head>
+<body>
+
+  <!-- ================= LOGIN SCREEN ================= -->
+  <div id="login-overlay">
+    <div class="login-card">
+      <div class="login-icon">📊</div>
+      <h2>Feedback Collation Portal</h2>
+      <p>Please enter your login credentials to continue</p>
+
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="login-user" class="login-input" placeholder="e.g. rajesh.k or admin" value="rajesh.k" />
+      </div>
+
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-pwd" class="login-input" placeholder="Enter password" value="rajesh@123" onkeypress="if(event.key==='Enter') doLogin()" />
+      </div>
+
+      <button class="login-btn" onclick="doLogin()">Login to Portal</button>
+
+      <div class="demo-credentials">
+        <b>Quick Login Credentials:</b><br>
+        • Manager: <code>rajesh.k</code> / <code>rajesh@123</code> (North Team)<br>
+        • Manager: <code>ananya.s</code> / <code>ananya@123</code> (East Team)<br>
+        • Central Admin: <code>admin</code> / <code>admin123</code> (Full Master Access)
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TOP NAVIGATION ================= -->
+  <header>
+    <div class="nav-container">
+      <div class="brand">
+        <div class="brand-icon">📈</div>
+        <div class="brand-text">
+          <h1>Feedback Collation & Caller Analytics Portal</h1>
+          <p>Manager Submission • Double Entry Filter • Daily PTP & Calling Analytics</p>
+        </div>
+      </div>
+
+      <div class="user-badge" id="user-badge">
+        <span class="role-tag role-manager" id="badge-role">Manager</span>
+        <span style="font-size:13px; font-weight:700;" id="badge-username">Rajesh Kumar</span>
+        <button class="logout-btn" onclick="doLogout()">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= MAIN DASHBOARD ================= -->
+  <main>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs-bar">
+      <button class="tab-btn active" onclick="switchTab('analytics')" id="btn-tab-analytics">
+        📊 Caller Analytics & PTP
+      </button>
+      <button class="tab-btn" onclick="switchTab('duplicates')" id="btn-tab-duplicates">
+        ⚠️ Double Entry Inspector
+        <span class="badge-count" id="tab-dup-count">3 Flagged</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('upload')" id="btn-tab-upload">
+        📤 Upload Feedback Excel
+      </button>
+      <button class="tab-btn" onclick="switchTab('template')" id="btn-tab-template">
+        📥 Template Guide
+      </button>
+      <button class="tab-btn" onclick="switchTab('admin-collate')" id="btn-tab-admin-collate" style="display:none;">
+        🛡️ Admin Master Collation
+      </button>
+      <button class="tab-btn" onclick="switchTab('manage-users')" id="btn-tab-manage-users" style="display:none;">
+        👥 Manage Users
+      </button>
+    </div>
+
+    <!-- Double Entry Alert Banner -->
+    <div class="dup-banner" id="banner-duplicates">
+      <div class="dup-banner-left">
+        <span style="font-size:28px;">⚠️</span>
+        <div>
+          <div class="dup-banner-title">Double / Repeat Entries Detected in Uploaded File!</div>
+          <div class="dup-banner-desc">
+            Rule Triggered: <b>Same Customer ID + Same Calling Date (14-Oct-2026) + Same Disposition Code + Same Feedback</b>.
+            Total <b>3 duplicate rows</b> found. These are highlighted in red below so counts are not doubled.
+          </div>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-rose" onclick="downloadDoubleEntryFile()" style="font-size:12px; padding:8px 14px;">
+          📥 Download Double Entry File (.xlsx)
+        </button>
+        <button class="btn btn-outline" onclick="switchTab('duplicates')" style="font-size:12px; padding:8px 14px;">
+          View Rows
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= TAB 1: CALLER ANALYTICS & PTP ================= -->
+    <div class="tab-panel active" id="panel-analytics">
+      
+      <!-- Date & Scope Filter Bar -->
+      <div style="background:#fff; border:1px solid var(--border); border-radius:var(--radius); padding:14px 20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+          <span style="font-size:13px; font-weight:700;">📅 Calling Date:</span>
+          <input type="date" value="2026-10-14" class="login-input" style="width:auto; padding:6px 10px; margin:0; font-size:12px;" id="filter-date-from">
+          <span style="font-size:12px; color:var(--text-muted);">to</span>
+          <input type="date" value="2026-10-14" class="login-input" style="width:auto; padding:6px 10px; margin:0; font-size:12px;" id="filter-date-to">
+          <button class="btn btn-outline" style="padding:6px 12px; font-size:12px;" onclick="applyDateFilter()">Filter</button>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:12px;">
+          <label style="display:flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:var(--rose); cursor:pointer;">
+            <input type="checkbox" id="chk-exclude-dup" checked onchange="toggleExcludeDuplicates(this.checked)">
+            Exclude Double Entries from Totals
+          </label>
+          <span class="badge-ptp" id="scope-indicator">Scope: Rajesh Kumar (Team North)</span>
+        </div>
+      </div>
+
+      <!-- KPI Summary Cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-title">Total Calls Logged</span>
+            <div class="kpi-icon" style="background:#eff6ff; color:#2563eb;">📞</div>
+          </div>
+          <div class="kpi-val" id="stat-calls">428</div>
+          <div class="kpi-sub" style="color:#10b981;">↑ Active calling today</div>
+        </div>
+
+        <div class="kpi-card" style="border-color:#86efac; background:linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%);">
+          <div class="kpi-header">
+            <span class="kpi-title" style="color:#15803d;">Today PTP Generated</span>
+            <div class="kpi-icon" style="background:#dcfce7; color:#15803d;">💰</div>
+          </div>
+          <div class="kpi-val" style="color:#15803d;" id="stat-ptp">64</div>
+          <div class="kpi-sub" style="color:#15803d;" id="stat-hitrate">🎯 14.95% Hit Rate (PTP)</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-title">RNR (Ringing No Response)</span>
+            <div class="kpi-icon" style="background:#fffbeb; color:#f59e0b;">📵</div>
+          </div>
+          <div class="kpi-val" id="stat-rnr">184</div>
+          <div class="kpi-sub">42.9% of Total Calls</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-title">Call Back & Other Feedback</span>
+            <div class="kpi-icon" style="background:#e0e7ff; color:#4f46e5;">🔄</div>
+          </div>
+          <div class="kpi-val" id="stat-cb">58</div>
+          <div class="kpi-sub">CB: 58 | NI: 42 | WN: 80</div>
+        </div>
+      </div>
+
+      <!-- Caller Breakdown Table & Disposition Chart -->
+      <div style="display:grid; grid-template-columns: 2fr 1fr; gap:20px;">
+        
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Caller Performance Breakdown</div>
+              <div class="card-subtitle">Caller total calls, PTP count, and conversion rate for today</div>
+            </div>
+            <button class="btn btn-outline" style="padding:6px 12px; font-size:12px;" onclick="exportCallerReport()">📥 Export Caller Summary</button>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Caller Name</th>
+                  <th style="text-align:center;">Total Calls</th>
+                  <th style="text-align:center;">PTP Generated</th>
+                  <th style="text-align:center;">RNR / CB</th>
+                  <th style="text-align:center;">Hit Rate %</th>
+                </tr>
+              </thead>
+              <tbody id="caller-table-body">
+                <tr>
+                  <td><b>Pooja Sharma</b> (CLR-101)</td>
+                  <td style="text-align:center; font-weight:800; color:#2563eb;">135</td>
+                  <td style="text-align:center;"><span class="badge-ptp">26 PTP</span></td>
+                  <td style="text-align:center; color:var(--text-muted);">52 / 18</td>
+                  <td style="text-align:center; font-weight:700; color:#10b981;">19.2%</td>
+                </tr>
+                <tr>
+                  <td><b>Amit Verma</b> (CLR-102)</td>
+                  <td style="text-align:center; font-weight:800; color:#2563eb;">118</td>
+                  <td style="text-align:center;"><span class="badge-ptp">18 PTP</span></td>
+                  <td style="text-align:center; color:var(--text-muted);">60 / 14</td>
+                  <td style="text-align:center; font-weight:700; color:#10b981;">15.2%</td>
+                </tr>
+                <tr>
+                  <td><b>Suresh Yadav</b> (CLR-103)</td>
+                  <td style="text-align:center; font-weight:800; color:#2563eb;">102</td>
+                  <td style="text-align:center;"><span class="badge-ptp">12 PTP</span></td>
+                  <td style="text-align:center; color:var(--text-muted);">48 / 16</td>
+                  <td style="text-align:center; font-weight:700; color:#64748b;">11.7%</td>
+                </tr>
+                <tr>
+                  <td><b>Ravi Shankar</b> (CLR-104)</td>
+                  <td style="text-align:center; font-weight:800; color:#2563eb;">73</td>
+                  <td style="text-align:center;"><span class="badge-ptp">8 PTP</span></td>
+                  <td style="text-align:center; color:var(--text-muted);">24 / 10</td>
+                  <td style="text-align:center; font-weight:700; color:#64748b;">10.9%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
+          <div>
+            <div class="card-title">Daily Disposition Distribution</div>
+            <div class="card-subtitle">Feedback share for today</div>
+            
+            <div style="height: 220px; position:relative; margin-top:14px;">
+              <canvas id="dispositionChart"></canvas>
+            </div>
+          </div>
+
+          <div style="background:#f8fafc; border-radius:12px; padding:12px; font-size:12px; border:1px solid var(--border);">
+            <div style="font-weight:700; margin-bottom:4px;">💡 Analysis Note:</div>
+            <div style="color:var(--text-muted); line-height:1.4;">
+              Pooja Sharma is top performer with <b>26 PTPs (19.2%)</b>. 184 RNR contacts scheduled for evening re-dialing.
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ================= TAB 2: DOUBLE ENTRY INSPECTOR ================= -->
+    <div class="tab-panel" id="panel-duplicates">
+      <div class="card" style="border-color:#fecdd3;">
+        <div class="card-head">
+          <div>
+            <div class="card-title" style="color:#9f1239; display:flex; align-items:center; gap:8px;">
+              <span>⚠️ Highlighted Double / Repeat Entries</span>
+              <span class="tag-dup">3 Flagged Records</span>
+            </div>
+            <div class="card-subtitle">
+              Rule: <b>Same Customer ID + Same Calling Date + Same Disposition Code + Same Feedback</b>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn btn-rose" onclick="downloadDoubleEntryFile()" style="box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">
+              📥 Download Double Entry File (.xlsx)
+            </button>
+            <button class="btn btn-outline" onclick="alert('Showing clean unique records')">Show Unique Only</button>
+            <button class="btn btn-outline" onclick="alert('Excluded flagged duplicates from all analytics counts!')">Exclude from Totals</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr style="background:#ffe4e6; color:#9f1239;">
+                <th>Status / Alert</th>
+                <th>Excel Row</th>
+                <th>Customer ID</th>
+                <th>Customer Name</th>
+                <th>Contact No</th>
+                <th>Calling Date</th>
+                <th>Desp Code</th>
+                <th>Feedback / Remarks</th>
+                <th>Caller Name</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+              <!-- Double Entry Pair 1: Same Customer, Same Date, Same Desp, Same Feedback -->
+              <tr class="row-duplicate">
+                <td><span class="tag-dup">⚠️ Double Entry (Call 1/2)</span></td>
+                <td style="font-family:'JetBrains Mono', monospace; font-weight:700;">Row #42</td>
+                <td style="font-weight:800; color:#b91c1c;">CUST-884920</td>
+                <td>Vikas Sharma</td>
+                <td>9876543210</td>
+                <td><b style="color:#b91c1c;">14-10-2026</b></td>
+                <td><span class="badge-rnr">RNR</span></td>
+                <td style="font-weight:600; color:#b91c1c;">Customer not picking call</td>
+                <td>Amit Verma</td>
+              </tr>
+              <tr class="row-duplicate">
+                <td><span class="tag-dup">⚠️ Double Entry (Call 2/2)</span></td>
+                <td style="font-family:'JetBrains Mono', monospace; font-weight:700;">Row #43</td>
+                <td style="font-weight:800; color:#b91c1c;">CUST-884920</td>
+                <td>Vikas Sharma</td>
+                <td>9876543210</td>
+                <td><b style="color:#b91c1c;">14-10-2026</b></td>
+                <td><span class="badge-rnr">RNR</span></td>
+                <td style="font-weight:600; color:#b91c1c;">Customer not picking call</td>
+                <td>Amit Verma</td>
+              </tr>
+
+              <!-- Double Entry Pair 2: Same Customer, Same Day, Same PTP, Same Feedback -->
+              <tr class="row-duplicate" style="border-top:2px dashed #fca5a5;">
+                <td><span class="tag-dup">⚠️ Double Entry (Call 1/2)</span></td>
+                <td style="font-family:'JetBrains Mono', monospace; font-weight:700;">Row #118</td>
+                <td style="font-weight:800; color:#b91c1c;">CUST-992105</td>
+                <td>Sunil Mehta</td>
+                <td>9123456780</td>
+                <td><b style="color:#b91c1c;">14-10-2026</b></td>
+                <td><span class="badge-ptp">PTP</span></td>
+                <td style="font-weight:600; color:#b91c1c;">Agreed to pay ₹ 12,000 on Friday</td>
+                <td>Pooja Sharma</td>
+              </tr>
+              <tr class="row-duplicate">
+                <td><span class="tag-dup">⚠️ Double Entry (Call 2/2)</span></td>
+                <td style="font-family:'JetBrains Mono', monospace; font-weight:700;">Row #119</td>
+                <td style="font-weight:800; color:#b91c1c;">CUST-992105</td>
+                <td>Sunil Mehta</td>
+                <td>9123456780</td>
+                <td><b style="color:#b91c1c;">14-10-2026</b></td>
+                <td><span class="badge-ptp">PTP</span></td>
+                <td style="font-weight:600; color:#b91c1c;">Agreed to pay ₹ 12,000 on Friday</td>
+                <td>Pooja Sharma</td>
+              </tr>
+
+              <!-- Clean Entry -->
+              <tr>
+                <td><span class="badge-ptp">✅ Clean Entry (Single Call)</span></td>
+                <td style="font-family:'JetBrains Mono', monospace; font-weight:700;">Row #120</td>
+                <td style="font-weight:700;">CUST-774411</td>
+                <td>Deepak Gupta</td>
+                <td>9988776655</td>
+                <td>14-10-2026</td>
+                <td><span class="badge-cb">Call Back</span></td>
+                <td>Customer requested call back at 6 PM</td>
+                <td>Suresh Yadav</td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+
+        <div style="margin-top:16px; padding:12px; background:#fff1f2; border-radius:10px; font-size:12px; color:#9f1239;">
+          <b>Highlighting Rule:</b> Agar ek customer ko same day me 2 baar call kiya gaya hai aur uska <b>Disposition Code</b> aur <b>Feedback remarks</b> dono exact same hain, toh portal automatically un dono rows ko <b>Red Color me highlight</b> karega aur manager ko **"Download Double Entry File"** ka option dega.
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= TAB 3: UPLOAD FEEDBACK EXCEL ================= -->
+    <div class="tab-panel" id="panel-upload">
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Upload Completed Feedback File</div>
+            <div class="card-subtitle">Upload your team's completed calling feedback sheet (.xlsx / .xls)</div>
+          </div>
+          <button class="btn btn-emerald" onclick="downloadTemplateFile()">📄 Download Blank Template (.xlsx)</button>
+        </div>
+
+        <div class="drop-zone" onclick="document.getElementById('file-upload-input').click()">
+          <input type="file" id="file-upload-input" accept=".xlsx,.xls" style="display:none;" onchange="handleFileUpload(event)">
+          <div class="drop-icon">📂</div>
+          <div style="font-size:16px; font-weight:700; margin-bottom:4px;">Drag & Drop or Click to Browse Excel</div>
+          <p style="font-size:12px; color:var(--text-muted);">
+            System will instantly parse records, validate column headers, and check for duplicate customer entries.
+          </p>
+        </div>
+
+        <div style="margin-top:24px;">
+          <div class="card-title" style="font-size:14px; margin-bottom:12px;">Recently Uploaded Files by You:</div>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; background:#f8fafc; border:1px solid var(--border); border-radius:12px;">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <span style="font-size:24px;">📗</span>
+                <div>
+                  <div style="font-size:13px; font-weight:700;">North_Zone_Calling_Feedback_14Oct2026.xlsx</div>
+                  <div style="font-size:11px; color:var(--text-muted);">428 Total Rows • 3 Double Entries Flagged • Uploaded 14-Oct-2026, 04:15 PM</div>
+                </div>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button class="btn btn-rose" style="padding:6px 12px; font-size:11px;" onclick="downloadDoubleEntryFile()">📥 Download Duplicates</button>
+                <span class="badge-ptp" style="align-self:center;">Synced to Central Admin</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= TAB 4: TEMPLATE GUIDE ================= -->
+    <div class="tab-panel" id="panel-template">
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Standard Feedback File Format Specification</div>
+            <div class="card-subtitle">Official format required for upload & automated collation</div>
+          </div>
+          <button class="btn btn-primary" onclick="downloadTemplateFile()">📄 Download Blank Template (.xlsx)</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Column #</th>
+                <th>Header Name</th>
+                <th>Data Type</th>
+                <th>Sample Value</th>
+                <th>Rule / Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><b>Col 1</b></td>
+                <td><b style="color:#2563eb;">CUSTOMER ID</b></td>
+                <td>Text/ID</td>
+                <td>CUST-884920</td>
+                <td>Mandatory. Used for duplicate check</td>
+              </tr>
+              <tr>
+                <td><b>Col 2</b></td>
+                <td><b>CUSTOMER NAME</b></td>
+                <td>Text</td>
+                <td>Vikas Sharma</td>
+                <td>Full Customer Name</td>
+              </tr>
+              <tr>
+                <td><b>Col 3</b></td>
+                <td><b>CONTACT NO</b></td>
+                <td>10-digit number</td>
+                <td>9876543210</td>
+                <td>Customer calling contact</td>
+              </tr>
+              <tr>
+                <td><b>Col 4</b></td>
+                <td><b style="color:#2563eb;">CALLING DATE</b></td>
+                <td>Date (DD-MM-YYYY)</td>
+                <td>14-10-2026</td>
+                <td>Mandatory. Used for duplicate check</td>
+              </tr>
+              <tr>
+                <td><b>Col 5</b></td>
+                <td><b style="color:#2563eb;">FEEDBACK</b></td>
+                <td>Text Remarks</td>
+                <td>Customer not picking call</td>
+                <td>Caller remarks. Used for duplicate check</td>
+              </tr>
+              <tr>
+                <td><b>Col 6</b></td>
+                <td><b style="color:#2563eb;">DESP CODE</b></td>
+                <td>Dropdown Code</td>
+                <td>PTP / RNR / CB / NI</td>
+                <td>Mandatory. Used for duplicate check</td>
+              </tr>
+              <tr>
+                <td><b>Col 7</b></td>
+                <td><b>PORTFOLIO</b></td>
+                <td>Text</td>
+                <td>Personal Loan / CC</td>
+                <td>Product line or portfolio</td>
+              </tr>
+              <tr>
+                <td><b>Col 8</b></td>
+                <td><b>MANAGER NAME</b></td>
+                <td>Text</td>
+                <td>Rajesh Kumar</td>
+                <td>Reporting manager</td>
+              </tr>
+              <tr>
+                <td><b>Col 9</b></td>
+                <td><b>CALLER NAME</b></td>
+                <td>Text</td>
+                <td>Pooja Sharma</td>
+                <td>Agent who made the call</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= TAB 5: ADMIN MASTER COLLATION (ADMIN ONLY) ================= -->
+    <div class="tab-panel" id="panel-admin-collate">
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">🛡️ Central Admin Download Center</div>
+            <div class="card-subtitle">Collate all uploaded manager files from across India into 1 Master Excel</div>
+          </div>
+          <span class="role-tag role-admin">Master Level</span>
+        </div>
+
+        <div style="background:#f8fafc; border:1px solid var(--border); border-radius:12px; padding:18px; margin-bottom:20px;">
+          <div style="font-size:13px; font-weight:700; margin-bottom:12px;">Collation Filters:</div>
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:14px;">
+            <div>
+              <label style="font-size:11px; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Filter Manager:</label>
+              <select class="login-input" style="padding:8px 12px; margin:0;" id="collate-mgr-select">
+                <option value="all">All Managers (All India)</option>
+                <option value="rajesh">Rajesh Kumar (North Zone)</option>
+                <option value="ananya">Ananya Sen (East Zone)</option>
+                <option value="vikram">Vikram Rathore (West Zone)</option>
+              </select>
+            </div>
+
+            <div>
+              <label style="font-size:11px; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Date Range:</label>
+              <input type="date" value="2026-10-14" class="login-input" style="padding:8px 12px; margin:0;">
+            </div>
+
+            <div>
+              <label style="font-size:11px; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Duplicate Handling:</label>
+              <select class="login-input" style="padding:8px 12px; margin:0; color:#b91c1c; font-weight:700;">
+                <option value="exclude">Auto-Exclude Flagged Double Entries</option>
+                <option value="mark">Include with "Double Entry" Tag Column</option>
+                <option value="all">Export As-Is</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:20px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:14px; flex-wrap:wrap; gap:12px;">
+          <div>
+            <div style="font-size:15px; font-weight:800; color:#1e40af;">Ready to Collate 4 Manager Files</div>
+            <div style="font-size:12px; color:#3b82f6; margin-top:2px;">
+              Total 1,640 Calling Rows • 248 Total PTPs • Clean Unique Rows: 1,612
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="downloadMasterCollatedReport()">
+            <span>📥</span> Download Consolidated Master Excel (.xlsx)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= TAB 6: MANAGE USERS (ADMIN ONLY) ================= -->
+    <div class="tab-panel" id="panel-manage-users">
+      <div style="display:grid; grid-template-columns: 1fr 2fr; gap:24px;">
+        
+        <!-- Create User Form -->
+        <div class="card">
+          <div class="card-title" style="margin-bottom:16px;">Create / Update Manager</div>
+          <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="new-u-name" class="login-input" placeholder="e.g. sunita.m" />
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="new-u-pwd" class="login-input" placeholder="Enter password" />
+          </div>
+          <div class="form-group">
+            <label>Role</label>
+            <select id="new-u-role" class="login-input">
+              <option value="Manager">Manager</option>
+              <option value="Admin">Admin</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" style="width:100%;" onclick="addUser()">Save User Account</button>
+        </div>
+
+        <!-- Users Table -->
+        <div class="card">
+          <div class="card-title" style="margin-bottom:16px;">Active Manager Accounts</div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Username</th>
+                  <th>Password</th>
+                  <th>Role</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="users-table-body">
+                <tr>
+                  <td><b>admin</b></td>
+                  <td><code>admin123</code></td>
+                  <td><span class="role-tag role-admin">Admin</span></td>
+                  <td><span style="font-size:11px; color:var(--text-muted);">Default Admin</span></td>
+                </tr>
+                <tr>
+                  <td><b>rajesh.k</b></td>
+                  <td><code>rajesh@123</code></td>
+                  <td><span class="role-tag role-manager">Manager</span></td>
+                  <td><button class="btn btn-rose" style="padding:4px 8px; font-size:11px;" onclick="deleteUser('rajesh.k')">Delete</button></td>
+                </tr>
+                <tr>
+                  <td><b>ananya.s</b></td>
+                  <td><code>ananya@123</code></td>
+                  <td><span class="role-tag role-manager">Manager</span></td>
+                  <td><button class="btn btn-rose" style="padding:4px 8px; font-size:11px;" onclick="deleteUser('ananya.s')">Delete</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ================= APPLICATION JAVASCRIPT ================= -->
+  <script>
+    // State
+    const state = {
+      currentUser: 'rajesh.k',
+      currentRole: 'Manager',
+      excludeDuplicates: true
+    };
+
+    // User accounts repository
+    let userDatabase = [
+      { username: 'admin', password: 'admin123', role: 'Admin', team: 'National Head' },
+      { username: 'rajesh.k', password: 'rajesh@123', role: 'Manager', team: 'North Zone' },
+      { username: 'ananya.s', password: 'ananya@123', role: 'Manager', team: 'East Zone' },
+      { username: 'vikram.r', password: 'vikram@123', role: 'Manager', team: 'West Zone' }
+    ];
+
+    // Auth Login
+    function doLogin() {
+      const u = document.getElementById('login-user').value.trim();
+      const p = document.getElementById('login-pwd').value.trim();
+
+      const found = userDatabase.find(user => user.username.toLowerCase() === u.toLowerCase() && user.password === p);
+      if (!found) {
+        alert('Invalid username or password! Please check demo credentials below.');
+        return;
+      }
+
+      state.currentUser = found.username;
+      state.currentRole = found.role;
+
+      // Update UI
+      document.getElementById('badge-role').className = 'role-tag ' + (found.role === 'Admin' ? 'role-admin' : 'role-manager');
+      document.getElementById('badge-role').textContent = found.role;
+      document.getElementById('badge-username').textContent = found.username + (found.team ? ` (${found.team})` : '');
+
+      if (found.role === 'Admin') {
+        document.getElementById('btn-tab-admin-collate').style.display = 'inline-flex';
+        document.getElementById('btn-tab-manage-users').style.display = 'inline-flex';
+        document.getElementById('scope-indicator').textContent = 'Admin Scope: All Managers Consolidated';
+        setAdminData();
+      } else {
+        document.getElementById('btn-tab-admin-collate').style.display = 'none';
+        document.getElementById('btn-tab-manage-users').style.display = 'none';
+        document.getElementById('scope-indicator').textContent = `Manager Scope: ${found.username} (${found.team || 'My Team'})`;
+        setManagerData();
+      }
+
+      document.getElementById('login-overlay').style.display = 'none';
+      switchTab('analytics');
+    }
+
+    function doLogout() {
+      document.getElementById('login-overlay').style.display = 'flex';
+      document.getElementById('login-pwd').value = '';
+    }
+
+    function setManagerData() {
+      document.getElementById('stat-calls').textContent = '428';
+      document.getElementById('stat-ptp').textContent = '64';
+      document.getElementById('stat-rnr').textContent = '184';
+      document.getElementById('stat-cb').textContent = '58';
+      updateChartData([64, 184, 58, 42, 80]);
+    }
+
+    function setAdminData() {
+      document.getElementById('stat-calls').textContent = '1,640';
+      document.getElementById('stat-ptp').textContent = '248';
+      document.getElementById('stat-rnr').textContent = '712';
+      document.getElementById('stat-cb').textContent = '218';
+      updateChartData([248, 712, 218, 160, 302]);
+    }
+
+    // Tabs
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+
+      const targetP = document.getElementById('panel-' + tabId);
+      const targetB = document.getElementById('btn-tab-' + tabId);
+      if (targetP) targetP.classList.add('active');
+      if (targetB) targetB.classList.add('active');
+    }
+
+    // Download Double Entry File
+    function downloadDoubleEntryFile() {
+      const headers = [
+        ['Double Entry Status', 'Row in Uploaded Excel', 'CUSTOMER ID', 'CUSTOMER NAME', 'CONTACT NO', 'CALLING DATE', 'DESP CODE', 'FEEDBACK', 'CALLER NAME', 'MANAGER NAME', 'Flag Reason']
+      ];
+      const duplicateData = [
+        ['⚠️ Double Entry (Call 1/2)', 42, 'CUST-884920', 'Vikas Sharma', '9876543210', '14-10-2026', 'RNR', 'Customer not picking call', 'Amit Verma', state.currentUser, 'Same Customer + Same Date + Same Desp + Same Feedback'],
+        ['⚠️ Double Entry (Call 2/2)', 43, 'CUST-884920', 'Vikas Sharma', '9876543210', '14-10-2026', 'RNR', 'Customer not picking call', 'Amit Verma', state.currentUser, 'Same Customer + Same Date + Same Desp + Same Feedback'],
+        ['⚠️ Double Entry (Call 1/2)', 118, 'CUST-992105', 'Sunil Mehta', '9123456780', '14-10-2026', 'PTP', 'Agreed to pay ₹ 12,000 on Friday', 'Pooja Sharma', state.currentUser, 'Same Customer + Same Date + Same Desp + Same Feedback'],
+        ['⚠️ Double Entry (Call 2/2)', 119, 'CUST-992105', 'Sunil Mehta', '9123456780', '14-10-2026', 'PTP', 'Agreed to pay ₹ 12,000 on Friday', 'Pooja Sharma', state.currentUser, 'Same Customer + Same Date + Same Desp + Same Feedback']
+      ];
+
+      if (typeof XLSX !== 'undefined') {
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(headers.concat(duplicateData));
+        XLSX.utils.book_append_sheet(wb, ws, "Flagged_Double_Entries");
+        XLSX.writeFile(wb, `Double_Entry_Log_${state.currentUser}_14Oct2026.xlsx`);
+      } else {
+        alert("Downloading Double_Entry_Log.xlsx containing the 4 flagged duplicate rows!");
+      }
+    }
+
+    // Download Blank Template
+    function downloadTemplateFile() {
+      const headers = [
+        ['CUSTOMER ID', 'CUSTOMER NAME', 'CONTACT NO', 'CALLING DATE', 'FEEDBACK', 'DESP CODE', 'PORTFOLIO', 'MANAGER NAME', 'CALLER NAME']
+      ];
+      const sample = [
+        ['CUST-1001', 'Ramesh Patel', '9822011223', '14-10-2026', 'Customer promised to pay by evening', 'PTP', 'Personal Loan', state.currentUser, 'Pooja Sharma'],
+        ['CUST-1002', 'Sunita Rao', '9822011224', '14-10-2026', 'Customer not picking call', 'RNR', 'Credit Card', state.currentUser, 'Amit Verma']
+      ];
+
+      if (typeof XLSX !== 'undefined') {
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(headers.concat(sample));
+        XLSX.utils.book_append_sheet(wb, ws, "Feedback Format");
+
+        const despWs = XLSX.utils.aoa_to_sheet([
+          ['DESP CODE', 'DESCRIPTION'],
+          ['PTP', 'Promise To Pay'],
+          ['RNR', 'Ringing No Response'],
+          ['CB', 'Call Back'],
+          ['NI', 'Not Interested'],
+          ['WN', 'Wrong Number'],
+          ['PAID', 'Already Paid']
+        ]);
+        XLSX.utils.book_append_sheet(wb, despWs, "Valid Disposition Codes");
+        XLSX.writeFile(wb, "Feedback_File_Format.xlsx");
+      } else {
+        alert("Downloading Feedback_File_Format.xlsx");
+      }
+    }
+
+    // Download Master Collated Report (Admin)
+    function downloadMasterCollatedReport() {
+      const headers = [
+        ['SOURCE MANAGER', 'CUSTOMER ID', 'CUSTOMER NAME', 'CONTACT NO', 'CALLING DATE', 'FEEDBACK', 'DESP CODE', 'PORTFOLIO', 'CALLER NAME', 'DOUBLE ENTRY STATUS']
+      ];
+      const collatedSample = [
+        ['Rajesh Kumar (North)', 'CUST-884920', 'Vikas Sharma', '9876543210', '14-10-2026', 'Customer not picking call', 'RNR', 'Personal Loan', 'Amit Verma', 'CLEAN (Unique)'],
+        ['Rajesh Kumar (North)', 'CUST-992105', 'Sunil Mehta', '9123456780', '14-10-2026', 'Agreed to pay ₹ 12,000 on Friday', 'PTP', 'Credit Card', 'Pooja Sharma', 'CLEAN (Unique)'],
+        ['Ananya Sen (East)', 'CUST-551122', 'Rahul Roy', '9988771122', '14-10-2026', 'Customer paid via UPI', 'PAID', 'Auto Loan', 'Subhash Ghosh', 'CLEAN (Unique)'],
+        ['Vikram Rathore (West)', 'CUST-332211', 'Ajay Patil', '9122334455', '14-10-2026', 'Requested call back at 6 PM', 'CB', 'Home Loan', 'Sneha Shinde', 'CLEAN (Unique)']
+      ];
+
+      if (typeof XLSX !== 'undefined') {
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(headers.concat(collatedSample));
+        XLSX.utils.book_append_sheet(wb, ws, "Master_Consolidated");
+        XLSX.writeFile(wb, "Master_Collated_Feedback_Report.xlsx");
+      } else {
+        alert("Downloading Master_Collated_Feedback_Report.xlsx!");
+      }
+    }
+
+    // File Upload Handler
+    function handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          if (typeof XLSX === 'undefined') {
+            alert(`File "${file.name}" uploaded successfully! 428 rows parsed, 3 duplicate rows flagged.`);
+            switchTab('duplicates');
+            return;
+          }
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, {type: 'array'});
+          const sheetName = workbook.SheetNames[0];
+          const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {header: 1});
+
+          alert(`File "${file.name}" uploaded successfully!\nTotal Rows: ${rows.length - 1}\n\n⚠️ Found 3 Double Entries (Same Customer + Same Date + Same Desp + Same Feedback).\nTaking you to Double Entry Inspector...`);
+          switchTab('duplicates');
+        } catch(err) {
+          alert("Error parsing Excel: " + err.message);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // Chart.js
+    let chartInstance = null;
+    function initChart() {
+      const ctx = document.getElementById('dispositionChart');
+      if (!ctx) return;
+
+      chartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['PTP (Promise to Pay)', 'RNR (No Response)', 'Call Back (CB)', 'Not Interested', 'Others'],
+          datasets: [{
+            data: [64, 184, 58, 42, 80],
+            backgroundColor: ['#10b981', '#f59e0b', '#4f46e5', '#ef4444', '#94a3b8'],
+            borderWidth: 2,
+            borderColor: '#ffffff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '70%',
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                boxWidth: 10,
+                font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function updateChartData(arr) {
+      if (!chartInstance) return;
+      chartInstance.data.datasets[0].data = arr;
+      chartInstance.update();
+    }
+
+    function toggleExcludeDuplicates(checked) {
+      state.excludeDuplicates = checked;
+      if (checked) {
+        document.getElementById('stat-calls').textContent = state.currentRole === 'Admin' ? '1,612' : '425';
+        alert('Double entries excluded from totals! Real unique calling counts are now reflected.');
+      } else {
+        document.getElementById('stat-calls').textContent = state.currentRole === 'Admin' ? '1,640' : '428';
+      }
+    }
+
+    function applyDateFilter() {
+      const from = document.getElementById('filter-date-from').value;
+      const to = document.getElementById('filter-date-to').value;
+      alert(`Filtered data between ${from} and ${to}!`);
+    }
+
+    function exportCallerReport() {
+      alert('Caller report exported to Excel format!');
+    }
+
+    // User management
+    function addUser() {
+      const u = document.getElementById('new-u-name').value.trim();
+      const p = document.getElementById('new-u-pwd').value.trim();
+      const r = document.getElementById('new-u-role').value;
+
+      if (!u || !p) return alert('Please enter username and password');
+
+      userDatabase.push({ username: u, password: p, role: r });
+      renderUsersTable();
+      alert(`User "${u}" created successfully!`);
+      document.getElementById('new-u-name').value = '';
+      document.getElementById('new-u-pwd').value = '';
+    }
+
+    function deleteUser(username) {
+      if (username === 'admin') return alert('Cannot delete default admin!');
+      userDatabase = userDatabase.filter(u => u.username !== username);
+      renderUsersTable();
+    }
+
+    function renderUsersTable() {
+      const tbody = document.getElementById('users-table-body');
+      tbody.innerHTML = userDatabase.map(u => `
+        <tr>
+          <td><b>${u.username}</b></td>
+          <td><code>${u.password}</code></td>
+          <td><span class="role-tag ${u.role === 'Admin' ? 'role-admin' : 'role-manager'}">${u.role}</span></td>
+          <td>${u.username === 'admin' ? '<span style="font-size:11px; color:var(--text-muted);">Default Admin</span>' : `<button class="btn btn-rose" style="padding:4px 8px; font-size:11px;" onclick="deleteUser('${u.username}')">Delete</button>`}</td>
+        </tr>
+      `).join('');
+    }
+
+    window.onload = function() {
+      initChart();
+    };
+  </script>
+</body>
+</html>
