@@ -36,10 +36,13 @@ A complete, production-ready web application for collecting daily calling feedba
 
 | Role | Username | Password | Access Level |
 | :--- | :--- | :--- | :--- |
-| **Central Admin** | `admin` | `admin123` | Full National Master Access & User Management |
-| **Manager (North Zone)** | `rajesh.k` | `rajesh@123` | Team North Calling & Upload Access |
-| **Manager (East Zone)** | `ananya.s` | `ananya@123` | Team East Calling & Upload Access |
-| **Manager (West Zone)** | `vikram.r` | `vikram@123` | Team West Calling & Upload Access |
+| **Central Admin** | `ADMIN` | `Tejas@123` | Full National Master Access & User Management |
+| **Manager ** | `AMBUJ T` | `Ambuj@123` |  Calling & Upload Access |
+| **Manager ** | `SHRAVANTHI P` | `Shravanthi@123` |  Calling & Upload Access |
+| **Manager ** | `OMKAR S` | `Omkar@123` |  Calling & Upload Access |
+| **Manager ** | `ADITI G` | `Aditi@123` |  Calling & Upload Access |
+| **Manager ** | `SMITA J` | `Smita@123` |  Calling & Upload Access |
+| **Manager ** | `SHWETA S` | `Shweta@123` |  Calling & Upload Access |
 
 *(Admin can add or delete manager accounts anytime from the "Manage Users" tab)*
 
