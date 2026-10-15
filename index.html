@@ -483,21 +483,21 @@
 
       <div class="form-group">
         <label>Username</label>
-        <input type="text" id="login-user" class="login-input" placeholder="e.g. rajesh.k or admin" value="rajesh.k" />
+        <input type="text" id="login-user" class="login-input" placeholder="e.g. Test or admin" value="Test" />
       </div>
 
       <div class="form-group">
         <label>Password</label>
-        <input type="password" id="login-pwd" class="login-input" placeholder="Enter password" value="rajesh@123" onkeypress="if(event.key==='Enter') doLogin()" />
+        <input type="password" id="login-pwd" class="login-input" placeholder="Enter password" value="Test@123" onkeypress="if(event.key==='Enter') doLogin()" />
       </div>
 
       <button class="login-btn" onclick="doLogin()">Login to Portal</button>
 
       <div class="demo-credentials">
-        <b>Quick Login Credentials:</b><br>
-        • Manager: <code>rajesh.k</code> / <code>rajesh@123</code> (North Team)<br>
-        • Manager: <code>ananya.s</code> / <code>ananya@123</code> (East Team)<br>
-        • Central Admin: <code>admin</code> / <code>admin123</code> (Full Master Access)
+        <b>Approved Login Credentials:</b><br>
+        • <b>Manager:</b> <code>Test</code> / <code>Test@123</code><br>
+        • <b>Manager:</b> <code>manager</code> / <code>mgr123</code><br>
+        • <b>Admin:</b> <code>admin</code> / <code>admin123</code>
       </div>
     </div>
   </div>
@@ -1053,16 +1053,16 @@
                   <td><span style="font-size:11px; color:var(--text-muted);">Default Admin</span></td>
                 </tr>
                 <tr>
-                  <td><b>rajesh.k</b></td>
-                  <td><code>rajesh@123</code></td>
+                  <td><b>Test</b></td>
+                  <td><code>Test@123</code></td>
                   <td><span class="role-tag role-manager">Manager</span></td>
-                  <td><button class="btn btn-rose" style="padding:4px 8px; font-size:11px;" onclick="deleteUser('rajesh.k')">Delete</button></td>
+                  <td><button class="btn btn-rose" style="padding:4px 8px; font-size:11px;" onclick="deleteUser('Test')">Delete</button></td>
                 </tr>
                 <tr>
-                  <td><b>ananya.s</b></td>
-                  <td><code>ananya@123</code></td>
+                  <td><b>manager</b></td>
+                  <td><code>mgr123</code></td>
                   <td><span class="role-tag role-manager">Manager</span></td>
-                  <td><button class="btn btn-rose" style="padding:4px 8px; font-size:11px;" onclick="deleteUser('ananya.s')">Delete</button></td>
+                  <td><button class="btn btn-rose" style="padding:4px 8px; font-size:11px;" onclick="deleteUser('manager')">Delete</button></td>
                 </tr>
               </tbody>
             </table>
@@ -1085,32 +1085,60 @@
 
     // User accounts repository
     let userDatabase = [
-      { username: 'admin', password: 'admin123', role: 'Admin', team: 'National Head' },
-      { username: 'rajesh.k', password: 'rajesh@123', role: 'Manager', team: 'North Zone' },
-      { username: 'ananya.s', password: 'ananya@123', role: 'Manager', team: 'East Zone' },
-      { username: 'vikram.r', password: 'vikram@123', role: 'Manager', team: 'West Zone' }
+      { username: 'admin', password: 'admin123', role: 'Admin', team: 'Central Admin' },
+      { username: 'Test', password: 'Test@123', role: 'Manager', team: 'Operations Team' },
+      { username: 'manager', password: 'mgr123', role: 'Manager', team: 'Calling Team' }
     ];
 
-    // Auth Login
-    function doLogin() {
+    // Auth Login (Backend Connected with Offline/GitHub Fallback)
+    async function doLogin() {
       const u = document.getElementById('login-user').value.trim();
       const p = document.getElementById('login-pwd').value.trim();
 
-      const found = userDatabase.find(user => user.username.toLowerCase() === u.toLowerCase() && user.password === p);
-      if (!found) {
-        alert('Invalid username or password! Please check demo credentials below.');
+      if (!u || !p) {
+        alert('Please enter username and password');
         return;
       }
 
-      state.currentUser = found.username;
-      state.currentRole = found.role;
+      let authenticated = null;
+
+      // 1. Try Backend API if server is running
+      try {
+        const res = await fetch('/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: u, password: p })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success) {
+            authenticated = { username: data.username, role: data.role, team: data.role === 'Admin' ? 'Central Admin' : 'Calling Team' };
+          }
+        }
+      } catch (err) {
+        // Backend offline or running standalone on GitHub Pages
+      }
+
+      // 2. Fallback to Local Database
+      if (!authenticated) {
+        const found = userDatabase.find(user => user.username.toLowerCase() === u.toLowerCase() && user.password === p);
+        if (found) authenticated = found;
+      }
+
+      if (!authenticated) {
+        alert('Invalid username or password!\n\nApproved credentials:\n• Manager: Test / Test@123 (ya manager / mgr123)\n• Admin: admin / admin123');
+        return;
+      }
+
+      state.currentUser = authenticated.username;
+      state.currentRole = authenticated.role;
 
       // Update UI
-      document.getElementById('badge-role').className = 'role-tag ' + (found.role === 'Admin' ? 'role-admin' : 'role-manager');
-      document.getElementById('badge-role').textContent = found.role;
-      document.getElementById('badge-username').textContent = found.username + (found.team ? ` (${found.team})` : '');
+      document.getElementById('badge-role').className = 'role-tag ' + (authenticated.role === 'Admin' ? 'role-admin' : 'role-manager');
+      document.getElementById('badge-role').textContent = authenticated.role;
+      document.getElementById('badge-username').textContent = authenticated.username + (authenticated.team ? ` (${authenticated.team})` : '');
 
-      if (found.role === 'Admin') {
+      if (authenticated.role === 'Admin') {
         document.getElementById('btn-tab-admin-collate').style.display = 'inline-flex';
         document.getElementById('btn-tab-manage-users').style.display = 'inline-flex';
         document.getElementById('scope-indicator').textContent = 'Admin Scope: All Managers Consolidated';
@@ -1118,7 +1146,7 @@
       } else {
         document.getElementById('btn-tab-admin-collate').style.display = 'none';
         document.getElementById('btn-tab-manage-users').style.display = 'none';
-        document.getElementById('scope-indicator').textContent = `Manager Scope: ${found.username} (${found.team || 'My Team'})`;
+        document.getElementById('scope-indicator').textContent = `Manager Scope: ${authenticated.username} (${authenticated.team || 'My Team'})`;
         setManagerData();
       }
 
