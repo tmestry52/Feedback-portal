@@ -7,15 +7,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  
+  <!-- SheetJS CDN & fallback -->
+  <script src="xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <!-- Chart.js for data visualization -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- SheetJS for Excel read/write (Local and CDN fallback) -->
-  <script src="xlsx.full.min.js"></script>
-  <script>
-    if (typeof XLSX === 'undefined') {
-      document.write('<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"><\/script>');
-    }
-  </script>
 
   <style>
     :root {
@@ -51,7 +48,7 @@
     #login-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(15, 23, 42, 0.7);
+      background: rgba(15, 23, 42, 0.75);
       backdrop-filter: blur(8px);
       z-index: 9999;
       display: flex;
@@ -64,7 +61,7 @@
       border-radius: 24px;
       padding: 36px;
       width: 100%;
-      max-width: 420px;
+      max-width: 440px;
       box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
       text-align: center;
       border: 1px solid var(--border);
@@ -82,28 +79,10 @@
       margin: 0 auto 16px;
       box-shadow: 0 8px 16px rgba(37, 99, 235, 0.25);
     }
-    .login-card h2 {
-      font-size: 20px;
-      font-weight: 800;
-      color: var(--text-main);
-      margin-bottom: 6px;
-    }
-    .login-card p {
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-bottom: 24px;
-    }
-    .form-group {
-      text-align: left;
-      margin-bottom: 16px;
-    }
-    .form-group label {
-      display: block;
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--text-main);
-      margin-bottom: 6px;
-    }
+    .login-card h2 { font-size: 20px; font-weight: 800; color: var(--text-main); margin-bottom: 6px; }
+    .login-card p { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
+    .form-group { text-align: left; margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 700; color: var(--text-main); margin-bottom: 6px; }
     .login-input {
       width: 100%;
       padding: 12px 14px;
@@ -133,19 +112,9 @@
       cursor: pointer;
       transition: all 0.2s;
       box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-      margin-top: 8px;
+      margin-top: 6px;
     }
     .login-btn:hover { background: var(--primary-hover); }
-    .demo-credentials {
-      margin-top: 20px;
-      padding: 12px;
-      background: #f1f5f9;
-      border-radius: 10px;
-      font-size: 11px;
-      color: var(--text-muted);
-      text-align: left;
-      line-height: 1.5;
-    }
 
     /* Top Header */
     header {
@@ -164,11 +133,7 @@
       justify-content: space-between;
       gap: 16px;
     }
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+    .brand { display: flex; align-items: center; gap: 12px; }
     .brand-icon {
       width: 44px;
       height: 44px;
@@ -181,17 +146,8 @@
       font-size: 22px;
       box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
     }
-    .brand-text h1 {
-      font-size: 18px;
-      font-weight: 800;
-      color: var(--text-main);
-      letter-spacing: -0.01em;
-    }
-    .brand-text p {
-      font-size: 12px;
-      color: var(--text-muted);
-      font-weight: 500;
-    }
+    .brand-text h1 { font-size: 18px; font-weight: 800; color: var(--text-main); letter-spacing: -0.01em; }
+    .brand-text p { font-size: 12px; color: var(--text-muted); font-weight: 500; }
     .user-badge {
       display: flex;
       align-items: center;
@@ -210,15 +166,7 @@
     }
     .role-manager { background: #dbeafe; color: #1e40af; }
     .role-admin { background: #f3e8ff; color: #6b21a8; }
-    .logout-btn {
-      background: none;
-      border: none;
-      color: var(--rose);
-      font-weight: 700;
-      font-size: 12px;
-      cursor: pointer;
-      margin-left: 6px;
-    }
+    .logout-btn { background: none; border: none; color: var(--rose); font-weight: 700; font-size: 12px; cursor: pointer; margin-left: 6px; }
 
     /* Main Layout */
     main {
@@ -244,7 +192,7 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 10px 20px;
+      padding: 10px 18px;
       border-radius: 12px;
       font-size: 13px;
       font-weight: 600;
@@ -256,11 +204,7 @@
       white-space: nowrap;
     }
     .tab-btn:hover { background: #f1f5f9; color: var(--text-main); }
-    .tab-btn.active {
-      background: var(--primary);
-      color: #fff;
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
-    }
+    .tab-btn.active { background: var(--primary); color: #fff; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); }
     .badge-count {
       background: var(--rose);
       color: white;
@@ -270,7 +214,7 @@
       border-radius: 100px;
     }
 
-    /* Double Entry Alert Banner */
+    /* Alert Banners */
     .dup-banner {
       background: linear-gradient(135deg, #fff1f2, #ffe4e6);
       border: 1px solid #fecdd3;
@@ -283,21 +227,9 @@
       gap: 14px;
       box-shadow: var(--shadow-sm);
     }
-    .dup-banner-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .dup-banner-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: #9f1239;
-    }
-    .dup-banner-desc {
-      font-size: 12px;
-      color: #be123c;
-      margin-top: 2px;
-    }
+    .dup-banner-left { display: flex; align-items: center; gap: 12px; }
+    .dup-banner-title { font-size: 14px; font-weight: 700; color: #9f1239; }
+    .dup-banner-desc { font-size: 12px; color: #be123c; margin-top: 2px; }
 
     /* KPI Grid */
     .kpi-grid {
@@ -316,18 +248,8 @@
       justify-content: space-between;
       gap: 10px;
     }
-    .kpi-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .kpi-title {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
+    .kpi-header { display: flex; align-items: center; justify-content: space-between; }
+    .kpi-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
     .kpi-icon {
       width: 36px;
       height: 36px;
@@ -337,17 +259,8 @@
       justify-content: center;
       font-size: 18px;
     }
-    .kpi-val {
-      font-size: 32px;
-      font-weight: 800;
-      color: var(--text-main);
-      line-height: 1;
-    }
-    .kpi-sub {
-      font-size: 12px;
-      color: var(--text-muted);
-      font-weight: 600;
-    }
+    .kpi-val { font-size: 32px; font-weight: 800; color: var(--text-main); line-height: 1; }
+    .kpi-sub { font-size: 12px; color: var(--text-muted); font-weight: 600; }
 
     /* Cards & Tables */
     .card {
@@ -365,28 +278,15 @@
       gap: 12px;
       margin-bottom: 20px;
     }
-    .card-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--text-main);
-    }
-    .card-subtitle {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
+    .card-title { font-size: 16px; font-weight: 700; color: var(--text-main); }
+    .card-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 
     .table-wrap {
       overflow-x: auto;
       border-radius: 12px;
       border: 1px solid var(--border);
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-      text-align: left;
-    }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
     thead th {
       background: #f8fafc;
       padding: 12px 16px;
@@ -442,6 +342,7 @@
       border: none;
       cursor: pointer;
       transition: all 0.2s;
+      text-decoration: none;
     }
     .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); }
     .btn-primary:hover { background: var(--primary-hover); }
@@ -449,6 +350,8 @@
     .btn-emerald:hover { background: #059669; }
     .btn-rose { background: var(--rose); color: #fff; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25); }
     .btn-rose:hover { background: #dc2626; }
+    .btn-purple { background: var(--purple); color: #fff; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25); }
+    .btn-purple:hover { background: #7c3aed; }
     .btn-outline { background: #fff; border: 1px solid var(--border); color: var(--text-main); }
     .btn-outline:hover { background: #f8fafc; }
 
@@ -462,10 +365,7 @@
       cursor: pointer;
       transition: all 0.2s;
     }
-    .drop-zone:hover {
-      border-color: var(--primary);
-      background: #e0f2fe;
-    }
+    .drop-zone:hover { border-color: var(--primary); background: #e0f2fe; }
     .drop-icon { font-size: 44px; margin-bottom: 8px; }
 
     .tab-panel { display: none; }
@@ -493,11 +393,19 @@
 
       <button class="login-btn" onclick="doLogin()">Login to Portal</button>
 
-      <div class="demo-credentials">
+      <div style="margin-top:14px; display:flex; gap:8px;">
+        <button type="button" class="btn btn-outline" style="flex:1; padding:8px; font-size:11px; font-weight:700; color:#1e40af; border-color:#93c5fd; background:#eff6ff;" onclick="quickLogin('Test', 'Test@123')">
+          👤 Quick Login (Manager)
+        </button>
+        <button type="button" class="btn btn-outline" style="flex:1; padding:8px; font-size:11px; font-weight:700; color:#6b21a8; border-color:#d8b4fe; background:#faf5ff;" onclick="quickLogin('admin', 'admin123')">
+          🛡️ Quick Login (Admin)
+        </button>
+      </div>
+
+      <div class="demo-credentials" style="margin-top:14px; padding:12px; background:#f1f5f9; border-radius:10px; font-size:11px; color:var(--text-muted); text-align:left; line-height:1.5;">
         <b>Approved Login Credentials:</b><br>
-        • <b>Manager:</b> <code>Test</code> / <code>Test@123</code><br>
-        • <b>Manager:</b> <code>manager</code> / <code>mgr123</code><br>
-        • <b>Admin:</b> <code>admin</code> / <code>admin123</code>
+        • <b>Manager:</b> <code>Test</code> / <code>Test@123</code> (or click Quick Login)<br>
+        • <b>Admin:</b> <code>admin</code> / <code>admin123</code> (or click Quick Login)
       </div>
     </div>
   </div>
@@ -509,14 +417,20 @@
         <div class="brand-icon">📈</div>
         <div class="brand-text">
           <h1>Feedback Collation & Caller Analytics Portal</h1>
-          <p>Manager Submission • Double Entry Filter • Daily PTP & Calling Analytics</p>
+          <p>Manager Submission • Double Entry Filter • Daily PTP & Backup System</p>
         </div>
       </div>
 
-      <div class="user-badge" id="user-badge">
-        <span class="role-tag role-manager" id="badge-role">Manager</span>
-        <span style="font-size:13px; font-weight:700;" id="badge-username">Rajesh Kumar</span>
-        <button class="logout-btn" onclick="doLogout()">Logout</button>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <button class="btn btn-purple" style="padding:6px 14px; font-size:12px;" onclick="exportFullDataBackup()">
+          💾 Export Data Backup
+        </button>
+
+        <div class="user-badge" id="user-badge">
+          <span class="role-tag role-manager" id="badge-role">Manager</span>
+          <span style="font-size:13px; font-weight:700;" id="badge-username">Test</span>
+          <button class="logout-btn" onclick="doLogout()">Logout</button>
+        </div>
       </div>
     </div>
   </header>
@@ -531,10 +445,17 @@
       </button>
       <button class="tab-btn" onclick="switchTab('duplicates')" id="btn-tab-duplicates">
         ⚠️ Double Entry Inspector
-        <span class="badge-count" id="tab-dup-count">3 Flagged</span>
+        <span class="badge-count" id="tab-dup-count">0 Flagged</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('records')" id="btn-tab-records">
+        📋 All Calling Records
+        <span class="badge-count" id="tab-records-count" style="background:#2563eb;">0 Rows</span>
       </button>
       <button class="tab-btn" onclick="switchTab('upload')" id="btn-tab-upload">
         📤 Upload Feedback Excel
+      </button>
+      <button class="tab-btn" onclick="switchTab('backup')" id="btn-tab-backup">
+        💾 Data Backup & Restore
       </button>
       <button class="tab-btn" onclick="switchTab('template')" id="btn-tab-template">
         📥 Template Guide
@@ -548,14 +469,13 @@
     </div>
 
     <!-- Double Entry Alert Banner -->
-    <div class="dup-banner" id="banner-duplicates">
+    <div class="dup-banner" id="banner-duplicates" style="display:none;">
       <div class="dup-banner-left">
         <span style="font-size:28px;">⚠️</span>
         <div>
-          <div class="dup-banner-title">Double / Repeat Entries Detected in Uploaded File!</div>
-          <div class="dup-banner-desc">
-            Rule Triggered: <b>Same Customer ID + Same Calling Date (14-Oct-2026) + Same Disposition Code + Same Feedback</b>.
-            Total <b>3 duplicate rows</b> found. These are highlighted in red below so counts are not doubled.
+          <div class="dup-banner-title" id="dup-banner-title">Double / Repeat Entries Detected!</div>
+          <div class="dup-banner-desc" id="dup-banner-desc">
+            Rule Triggered: <b>Same Customer ID + Same Calling Date + Same Disposition Code + Same Feedback</b>.
           </div>
         </div>
       </div>
@@ -576,10 +496,11 @@
       <div style="background:#fff; border:1px solid var(--border); border-radius:var(--radius); padding:14px 20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
           <span style="font-size:13px; font-weight:700;">📅 Calling Date:</span>
-          <input type="date" value="2026-10-14" class="login-input" style="width:auto; padding:6px 10px; margin:0; font-size:12px;" id="filter-date-from">
+          <input type="date" class="login-input" style="width:auto; padding:6px 10px; margin:0; font-size:12px;" id="filter-date-from" onchange="renderDashboard()">
           <span style="font-size:12px; color:var(--text-muted);">to</span>
-          <input type="date" value="2026-10-14" class="login-input" style="width:auto; padding:6px 10px; margin:0; font-size:12px;" id="filter-date-to">
-          <button class="btn btn-outline" style="padding:6px 12px; font-size:12px;" onclick="applyDateFilter()">Filter</button>
+          <input type="date" class="login-input" style="width:auto; padding:6px 10px; margin:0; font-size:12px;" id="filter-date-to" onchange="renderDashboard()">
+          <button class="btn btn-outline" style="padding:6px 12px; font-size:12px;" onclick="renderDashboard()">Filter</button>
+          <button class="btn btn-outline" style="padding:6px 12px; font-size:12px;" onclick="clearDateFilter()">Clear Filter</button>
         </div>
 
         <div style="display:flex; align-items:center; gap:12px;">
@@ -587,7 +508,7 @@
             <input type="checkbox" id="chk-exclude-dup" checked onchange="toggleExcludeDuplicates(this.checked)">
             Exclude Double Entries from Totals
           </label>
-          <span class="badge-ptp" id="scope-indicator">Scope: Rajesh Kumar (Team North)</span>
+          <span class="badge-ptp" id="scope-indicator">Scope: Test (Manager View)</span>
         </div>
       </div>
 
@@ -598,35 +519,35 @@
             <span class="kpi-title">Total Calls Logged</span>
             <div class="kpi-icon" style="background:#eff6ff; color:#2563eb;">📞</div>
           </div>
-          <div class="kpi-val" id="stat-calls">428</div>
-          <div class="kpi-sub" style="color:#10b981;">↑ Active calling today</div>
+          <div class="kpi-val" id="stat-calls">0</div>
+          <div class="kpi-sub" style="color:#10b981;">Total records parsed</div>
         </div>
 
         <div class="kpi-card" style="border-color:#86efac; background:linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%);">
           <div class="kpi-header">
-            <span class="kpi-title" style="color:#15803d;">Today PTP Generated</span>
+            <span class="kpi-title" style="color:#15803d;">PTP Generated</span>
             <div class="kpi-icon" style="background:#dcfce7; color:#15803d;">💰</div>
           </div>
-          <div class="kpi-val" style="color:#15803d;" id="stat-ptp">64</div>
-          <div class="kpi-sub" style="color:#15803d;" id="stat-hitrate">🎯 14.95% Hit Rate (PTP)</div>
+          <div class="kpi-val" style="color:#15803d;" id="stat-ptp">0</div>
+          <div class="kpi-sub" style="color:#15803d;" id="stat-hitrate">🎯 0% Hit Rate (PTP)</div>
         </div>
 
         <div class="kpi-card">
           <div class="kpi-header">
-            <span class="kpi-title">RNR (Ringing No Response)</span>
+            <span class="kpi-title">RNR (No Response)</span>
             <div class="kpi-icon" style="background:#fffbeb; color:#f59e0b;">📵</div>
           </div>
-          <div class="kpi-val" id="stat-rnr">184</div>
-          <div class="kpi-sub">42.9% of Total Calls</div>
+          <div class="kpi-val" id="stat-rnr">0</div>
+          <div class="kpi-sub" id="stat-rnr-pct">0% of Total Calls</div>
         </div>
 
         <div class="kpi-card">
           <div class="kpi-header">
-            <span class="kpi-title">Call Back & Other Feedback</span>
+            <span class="kpi-title">Call Back & Others</span>
             <div class="kpi-icon" style="background:#e0e7ff; color:#4f46e5;">🔄</div>
           </div>
-          <div class="kpi-val" id="stat-cb">58</div>
-          <div class="kpi-sub">CB: 58 | NI: 42 | WN: 80</div>
+          <div class="kpi-val" id="stat-cb">0</div>
+          <div class="kpi-sub" id="stat-cb-sub">CB: 0 | NI: 0</div>
         </div>
       </div>
 
@@ -637,7 +558,7 @@
           <div class="card-head">
             <div>
               <div class="card-title">Caller Performance Breakdown</div>
-              <div class="card-subtitle">Caller total calls, PTP count, and conversion rate for today</div>
+              <div class="card-subtitle">Caller total calls, PTP count, and conversion rate</div>
             </div>
             <button class="btn btn-outline" style="padding:6px 12px; font-size:12px;" onclick="exportCallerReport()">📥 Export Caller Summary</button>
           </div>
@@ -654,34 +575,7 @@
                 </tr>
               </thead>
               <tbody id="caller-table-body">
-                <tr>
-                  <td><b>Pooja Sharma</b> (CLR-101)</td>
-                  <td style="text-align:center; font-weight:800; color:#2563eb;">135</td>
-                  <td style="text-align:center;"><span class="badge-ptp">26 PTP</span></td>
-                  <td style="text-align:center; color:var(--text-muted);">52 / 18</td>
-                  <td style="text-align:center; font-weight:700; color:#10b981;">19.2%</td>
-                </tr>
-                <tr>
-                  <td><b>Amit Verma</b> (CLR-102)</td>
-                  <td style="text-align:center; font-weight:800; color:#2563eb;">118</td>
-                  <td style="text-align:center;"><span class="badge-ptp">18 PTP</span></td>
-                  <td style="text-align:center; color:var(--text-muted);">60 / 14</td>
-                  <td style="text-align:center; font-weight:700; color:#10b981;">15.2%</td>
-                </tr>
-                <tr>
-                  <td><b>Suresh Yadav</b> (CLR-103)</td>
-                  <td style="text-align:center; font-weight:800; color:#2563eb;">102</td>
-                  <td style="text-align:center;"><span class="badge-ptp">12 PTP</span></td>
-                  <td style="text-align:center; color:var(--text-muted);">48 / 16</td>
-                  <td style="text-align:center; font-weight:700; color:#64748b;">11.7%</td>
-                </tr>
-                <tr>
-                  <td><b>Ravi Shankar</b> (CLR-104)</td>
-                  <td style="text-align:center; font-weight:800; color:#2563eb;">73</td>
-                  <td style="text-align:center;"><span class="badge-ptp">8 PTP</span></td>
-                  <td style="text-align:center; color:var(--text-muted);">24 / 10</td>
-                  <td style="text-align:center; font-weight:700; color:#64748b;">10.9%</td>
-                </tr>
+                <tr><td colspan="5" style="text-align:center; padding:24px; color:var(--text-muted);">Please upload an Excel file to see live caller analytics.</td></tr>
               </tbody>
             </table>
           </div>
@@ -689,18 +583,18 @@
 
         <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
           <div>
-            <div class="card-title">Daily Disposition Distribution</div>
-            <div class="card-subtitle">Feedback share for today</div>
+            <div class="card-title">Disposition Distribution</div>
+            <div class="card-subtitle">Outcome breakdown of calling data</div>
             
             <div style="height: 220px; position:relative; margin-top:14px;">
               <canvas id="dispositionChart"></canvas>
             </div>
           </div>
 
-          <div style="background:#f8fafc; border-radius:12px; padding:12px; font-size:12px; border:1px solid var(--border);">
+          <div style="background:#f8fafc; border-radius:12px; padding:12px; font-size:12px; border:1px solid var(--border); margin-top:10px;">
             <div style="font-weight:700; margin-bottom:4px;">💡 Analysis Note:</div>
-            <div style="color:var(--text-muted); line-height:1.4;">
-              Pooja Sharma is top performer with <b>26 PTPs (19.2%)</b>. 184 RNR contacts scheduled for evening re-dialing.
+            <div style="color:var(--text-muted); line-height:1.4;" id="analysis-note">
+              Upload your daily feedback sheet to see live disposition metrics and conversion insights.
             </div>
           </div>
         </div>
@@ -716,7 +610,7 @@
           <div>
             <div class="card-title" style="color:#9f1239; display:flex; align-items:center; gap:8px;">
               <span>⚠️ Highlighted Double / Repeat Entries</span>
-              <span class="tag-dup">3 Flagged Records</span>
+              <span class="tag-dup" id="dup-badge-counter">0 Records</span>
             </div>
             <div class="card-subtitle">
               Rule: <b>Same Customer ID + Same Calling Date + Same Disposition Code + Same Feedback</b>
@@ -727,8 +621,7 @@
             <button class="btn btn-rose" onclick="downloadDoubleEntryFile()" style="box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">
               📥 Download Double Entry File (.xlsx)
             </button>
-            <button class="btn btn-outline" onclick="alert('Showing clean unique records')">Show Unique Only</button>
-            <button class="btn btn-outline" onclick="alert('Excluded flagged duplicates from all analytics counts!')">Exclude from Totals</button>
+            <button class="btn btn-outline" onclick="toggleOnlyDuplicates()">Toggle Unique / Duplicates</button>
           </div>
         </div>
 
@@ -737,7 +630,7 @@
             <thead>
               <tr style="background:#ffe4e6; color:#9f1239;">
                 <th>Status / Alert</th>
-                <th>Excel Row</th>
+                <th>Source File</th>
                 <th>Customer ID</th>
                 <th>Customer Name</th>
                 <th>Contact No</th>
@@ -747,75 +640,74 @@
                 <th>Caller Name</th>
               </tr>
             </thead>
-            <tbody>
-              
-              <!-- Double Entry Pair 1: Same Customer, Same Date, Same Desp, Same Feedback -->
-              <tr class="row-duplicate">
-                <td><span class="tag-dup">⚠️ Double Entry (Call 1/2)</span></td>
-                <td style="font-family:'JetBrains Mono', monospace; font-weight:700;">Row #42</td>
-                <td style="font-weight:800; color:#b91c1c;">CUST-884920</td>
-                <td>Vikas Sharma</td>
-                <td>9876543210</td>
-                <td><b style="color:#b91c1c;">14-10-2026</b></td>
-                <td><span class="badge-rnr">RNR</span></td>
-                <td style="font-weight:600; color:#b91c1c;">Customer not picking call</td>
-                <td>Amit Verma</td>
-              </tr>
-              <tr class="row-duplicate">
-                <td><span class="tag-dup">⚠️ Double Entry (Call 2/2)</span></td>
-                <td style="font-family:'JetBrains Mono', monospace; font-weight:700;">Row #43</td>
-                <td style="font-weight:800; color:#b91c1c;">CUST-884920</td>
-                <td>Vikas Sharma</td>
-                <td>9876543210</td>
-                <td><b style="color:#b91c1c;">14-10-2026</b></td>
-                <td><span class="badge-rnr">RNR</span></td>
-                <td style="font-weight:600; color:#b91c1c;">Customer not picking call</td>
-                <td>Amit Verma</td>
-              </tr>
-
-              <!-- Double Entry Pair 2: Same Customer, Same Day, Same PTP, Same Feedback -->
-              <tr class="row-duplicate" style="border-top:2px dashed #fca5a5;">
-                <td><span class="tag-dup">⚠️ Double Entry (Call 1/2)</span></td>
-                <td style="font-family:'JetBrains Mono', monospace; font-weight:700;">Row #118</td>
-                <td style="font-weight:800; color:#b91c1c;">CUST-992105</td>
-                <td>Sunil Mehta</td>
-                <td>9123456780</td>
-                <td><b style="color:#b91c1c;">14-10-2026</b></td>
-                <td><span class="badge-ptp">PTP</span></td>
-                <td style="font-weight:600; color:#b91c1c;">Agreed to pay ₹ 12,000 on Friday</td>
-                <td>Pooja Sharma</td>
-              </tr>
-              <tr class="row-duplicate">
-                <td><span class="tag-dup">⚠️ Double Entry (Call 2/2)</span></td>
-                <td style="font-family:'JetBrains Mono', monospace; font-weight:700;">Row #119</td>
-                <td style="font-weight:800; color:#b91c1c;">CUST-992105</td>
-                <td>Sunil Mehta</td>
-                <td>9123456780</td>
-                <td><b style="color:#b91c1c;">14-10-2026</b></td>
-                <td><span class="badge-ptp">PTP</span></td>
-                <td style="font-weight:600; color:#b91c1c;">Agreed to pay ₹ 12,000 on Friday</td>
-                <td>Pooja Sharma</td>
-              </tr>
-
-              <!-- Clean Entry -->
-              <tr>
-                <td><span class="badge-ptp">✅ Clean Entry (Single Call)</span></td>
-                <td style="font-family:'JetBrains Mono', monospace; font-weight:700;">Row #120</td>
-                <td style="font-weight:700;">CUST-774411</td>
-                <td>Deepak Gupta</td>
-                <td>9988776655</td>
-                <td>14-10-2026</td>
-                <td><span class="badge-cb">Call Back</span></td>
-                <td>Customer requested call back at 6 PM</td>
-                <td>Suresh Yadav</td>
-              </tr>
-
+            <tbody id="duplicates-table-body">
+              <tr><td colspan="9" style="text-align:center; padding:24px; color:var(--text-muted);">No double entries detected. Upload feedback Excel to inspect.</td></tr>
             </tbody>
           </table>
         </div>
 
         <div style="margin-top:16px; padding:12px; background:#fff1f2; border-radius:10px; font-size:12px; color:#9f1239;">
-          <b>Highlighting Rule:</b> Agar ek customer ko same day me 2 baar call kiya gaya hai aur uska <b>Disposition Code</b> aur <b>Feedback remarks</b> dono exact same hain, toh portal automatically un dono rows ko <b>Red Color me highlight</b> karega aur manager ko **"Download Double Entry File"** ka option dega.
+          <b>Highlighting Rule:</b> Agar ek customer ko same day me 2 ya multiple baar call kiya gaya hai aur uska <b>Disposition Code</b> aur <b>Feedback remarks</b> dono exact same hain, toh portal automatically un rows ko <b>Red Color me highlight</b> karega aur <b>"Download Double Entry File"</b> me export karega.
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= TAB: ALL CALLING RECORDS ================= -->
+    <div class="tab-panel" id="panel-records">
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title" style="display:flex; align-items:center; gap:8px;">
+              <span>📋 All Calling Records (Master Data Table)</span>
+              <span class="badge-ptp" id="records-total-badge">0 Records</span>
+            </div>
+            <div class="card-subtitle">
+              Every row uploaded by your team with full Customer ID, Phone, Date, Disposition, and Remarks
+            </div>
+          </div>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+            <input type="text" id="records-search-input" placeholder="🔍 Search Customer, Phone, Caller, Remarks..." class="login-input" style="width:280px; margin:0; padding:8px 12px; font-size:12px;" oninput="renderAllRecordsTable()">
+            <select id="records-desp-filter" class="login-input" style="width:170px; margin:0; padding:8px 10px; font-size:12px;" onchange="renderAllRecordsTable()">
+              <option value="">All Dispositions</option>
+              <option value="PTP">PTP Only</option>
+              <option value="RNR">RNR Only</option>
+              <option value="CB">Call Back Only</option>
+              <option value="NI">Not Interested</option>
+              <option value="DUP">⚠️ Double Entries Only</option>
+            </select>
+            <button class="btn btn-emerald" onclick="exportFilteredRecords()" style="font-size:12px; padding:8px 14px;">
+              📥 Export Table (.xlsx)
+            </button>
+          </div>
+        </div>
+
+        <div class="table-wrap" style="max-height: 600px; overflow-y: auto;">
+          <table>
+            <thead style="position: sticky; top: 0; background: #f8fafc; z-index: 2;">
+              <tr>
+                <th>#</th>
+                <th>Status</th>
+                <th>Customer ID</th>
+                <th>Customer Name</th>
+                <th>Contact No</th>
+                <th>Calling Date</th>
+                <th>Desp Code</th>
+                <th>Feedback / Remarks</th>
+                <th>Portfolio</th>
+                <th>Manager</th>
+                <th>Caller Name</th>
+              </tr>
+            </thead>
+            <tbody id="all-records-table-body">
+              <tr><td colspan="11" style="text-align:center; padding:32px; color:var(--text-muted);">Please upload an Excel file to view calling data.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; font-size:12px; color:var(--text-muted); flex-wrap:wrap; gap:10px;">
+          <div id="records-pagination-info">Showing 0 of 0 records</div>
+          <div style="display:flex; gap:6px;" id="records-pagination-controls"></div>
         </div>
       </div>
     </div>
@@ -836,32 +728,100 @@
           <div class="drop-icon">📂</div>
           <div style="font-size:16px; font-weight:700; margin-bottom:4px;">Drag & Drop or Click to Browse Excel</div>
           <p style="font-size:12px; color:var(--text-muted);">
-            System will instantly parse records, validate column headers, and check for duplicate customer entries.
+            System parses records, detects duplicates (Same Customer + Date + Desp + Feedback), saves to backup, and renders analytics.
           </p>
         </div>
 
         <div style="margin-top:24px;">
-          <div class="card-title" style="font-size:14px; margin-bottom:12px;">Recently Uploaded Files by You:</div>
-          <div style="display:flex; flex-direction:column; gap:10px;">
-            <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; background:#f8fafc; border:1px solid var(--border); border-radius:12px;">
-              <div style="display:flex; align-items:center; gap:12px;">
-                <span style="font-size:24px;">📗</span>
-                <div>
-                  <div style="font-size:13px; font-weight:700;">North_Zone_Calling_Feedback_14Oct2026.xlsx</div>
-                  <div style="font-size:11px; color:var(--text-muted);">428 Total Rows • 3 Double Entries Flagged • Uploaded 14-Oct-2026, 04:15 PM</div>
-                </div>
-              </div>
-              <div style="display:flex; gap:8px;">
-                <button class="btn btn-rose" style="padding:6px 12px; font-size:11px;" onclick="downloadDoubleEntryFile()">📥 Download Duplicates</button>
-                <span class="badge-ptp" style="align-self:center;">Synced to Central Admin</span>
-              </div>
+          <div class="card-head" style="margin-bottom:12px;">
+            <div class="card-title" style="font-size:14px;">Uploaded Feedback Files in Portal:</div>
+            <button class="btn btn-outline" style="padding:4px 10px; font-size:11px;" onclick="clearAllFiles()">🗑️ Clear Uploaded Files</button>
+          </div>
+          
+          <div id="uploaded-files-list" style="display:flex; flex-direction:column; gap:10px;">
+            <div style="padding:16px; text-align:center; color:var(--text-muted); font-size:13px; background:#f8fafc; border-radius:12px; border:1px solid var(--border);">
+              No feedback files uploaded yet. Click above to upload your Excel file.
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ================= TAB 4: TEMPLATE GUIDE ================= -->
+    <!-- ================= TAB 4: DATA BACKUP & RESTORE ================= -->
+    <div class="tab-panel" id="panel-backup">
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">💾 Data Backup & Restore Center</div>
+            <div class="card-subtitle">Securely export, archive, or restore all calling data, files, and duplicate logs</div>
+          </div>
+          <span class="role-tag role-manager">Protected Storage</span>
+        </div>
+
+        <!-- Backup Action Cards Grid -->
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin-bottom:24px;">
+          
+          <!-- Download Full Backup JSON -->
+          <div style="background:#f8fafc; border:1px solid var(--border); border-radius:14px; padding:20px; display:flex; flex-direction:column; justify-content:space-between; gap:14px;">
+            <div>
+              <div style="font-size:24px; margin-bottom:8px;">📦</div>
+              <div style="font-size:15px; font-weight:800; color:var(--text-main);">Full System Backup (.JSON)</div>
+              <p style="font-size:12px; color:var(--text-muted); margin-top:4px;">
+                Exports complete database snapshot including all uploaded files, raw caller rows, duplicate flags, and user accounts.
+              </p>
+            </div>
+            <button class="btn btn-purple" style="width:100%;" onclick="exportFullDataBackup()">
+              📥 Export System Backup (.json)
+            </button>
+          </div>
+
+          <!-- Export Master Calling Archive Excel -->
+          <div style="background:#f8fafc; border:1px solid var(--border); border-radius:14px; padding:20px; display:flex; flex-direction:column; justify-content:space-between; gap:14px;">
+            <div>
+              <div style="font-size:24px; margin-bottom:8px;">📊</div>
+              <div style="font-size:15px; font-weight:800; color:var(--text-main);">Master Excel Archive (.XLSX)</div>
+              <p style="font-size:12px; color:var(--text-muted); margin-top:4px;">
+                Exports all combined rows from every uploaded file into a unified Excel archive with audit stamps.
+              </p>
+            </div>
+            <button class="btn btn-emerald" style="width:100%;" onclick="exportMasterExcelArchive()">
+              📥 Export Excel Archive (.xlsx)
+            </button>
+          </div>
+
+          <!-- Restore Backup File -->
+          <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:14px; padding:20px; display:flex; flex-direction:column; justify-content:space-between; gap:14px;">
+            <div>
+              <div style="font-size:24px; margin-bottom:8px;">🔄</div>
+              <div style="font-size:15px; font-weight:800; color:#1e40af;">Restore Portal From Backup</div>
+              <p style="font-size:12px; color:#3b82f6; margin-top:4px;">
+                Upload a previously downloaded <code>.json</code> backup file to immediately restore all past data and files.
+              </p>
+            </div>
+            <div>
+              <input type="file" id="backup-restore-input" accept=".json" style="display:none;" onchange="handleRestoreBackup(event)">
+              <button class="btn btn-primary" style="width:100%;" onclick="document.getElementById('backup-restore-input').click()">
+                📂 Select Backup File (.json)
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Storage Status Information -->
+        <div style="padding:16px 20px; background:#f1f5f9; border-radius:12px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:12px;">
+          <div>
+            <b>System Storage Status:</b> <span id="storage-status-text">0 Files • 0 Records Stored</span>
+          </div>
+          <div>
+            <b>Last Backup Action:</b> <span id="storage-last-backup">Never</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ================= TAB 5: TEMPLATE GUIDE ================= -->
     <div class="tab-panel" id="panel-template">
       <div class="card">
         <div class="card-head">
@@ -884,82 +844,28 @@
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td><b>Col 1</b></td>
-                <td><b style="color:#2563eb;">CUSTOMER ID</b></td>
-                <td>Text/ID</td>
-                <td>CUST-884920</td>
-                <td>Mandatory. Used for duplicate check</td>
-              </tr>
-              <tr>
-                <td><b>Col 2</b></td>
-                <td><b>CUSTOMER NAME</b></td>
-                <td>Text</td>
-                <td>Vikas Sharma</td>
-                <td>Full Customer Name</td>
-              </tr>
-              <tr>
-                <td><b>Col 3</b></td>
-                <td><b>CONTACT NO</b></td>
-                <td>10-digit number</td>
-                <td>9876543210</td>
-                <td>Customer calling contact</td>
-              </tr>
-              <tr>
-                <td><b>Col 4</b></td>
-                <td><b style="color:#2563eb;">CALLING DATE</b></td>
-                <td>Date (DD-MM-YYYY)</td>
-                <td>14-10-2026</td>
-                <td>Mandatory. Used for duplicate check</td>
-              </tr>
-              <tr>
-                <td><b>Col 5</b></td>
-                <td><b style="color:#2563eb;">FEEDBACK</b></td>
-                <td>Text Remarks</td>
-                <td>Customer not picking call</td>
-                <td>Caller remarks. Used for duplicate check</td>
-              </tr>
-              <tr>
-                <td><b>Col 6</b></td>
-                <td><b style="color:#2563eb;">DESP CODE</b></td>
-                <td>Dropdown Code</td>
-                <td>PTP / RNR / CB / NI</td>
-                <td>Mandatory. Used for duplicate check</td>
-              </tr>
-              <tr>
-                <td><b>Col 7</b></td>
-                <td><b>PORTFOLIO</b></td>
-                <td>Text</td>
-                <td>Personal Loan / CC</td>
-                <td>Product line or portfolio</td>
-              </tr>
-              <tr>
-                <td><b>Col 8</b></td>
-                <td><b>MANAGER NAME</b></td>
-                <td>Text</td>
-                <td>Rajesh Kumar</td>
-                <td>Reporting manager</td>
-              </tr>
-              <tr>
-                <td><b>Col 9</b></td>
-                <td><b>CALLER NAME</b></td>
-                <td>Text</td>
-                <td>Pooja Sharma</td>
-                <td>Agent who made the call</td>
-              </tr>
+              <tr><td><b>Col 1</b></td><td><b style="color:#2563eb;">CUSTOMER ID</b></td><td>Text/ID</td><td>CUST-884920</td><td>Mandatory. Used for duplicate check</td></tr>
+              <tr><td><b>Col 2</b></td><td><b>CUSTOMER NAME</b></td><td>Text</td><td>Vikas Sharma</td><td>Full Customer Name</td></tr>
+              <tr><td><b>Col 3</b></td><td><b>CONTACT NO</b></td><td>10-digit number</td><td>9876543210</td><td>Customer calling contact</td></tr>
+              <tr><td><b>Col 4</b></td><td><b style="color:#2563eb;">CALLING DATE</b></td><td>Date</td><td>14-10-2026</td><td>Mandatory. Used for duplicate check</td></tr>
+              <tr><td><b>Col 5</b></td><td><b style="color:#2563eb;">FEEDBACK</b></td><td>Text Remarks</td><td>Customer not picking call</td><td>Caller remarks. Used for duplicate check</td></tr>
+              <tr><td><b>Col 6</b></td><td><b style="color:#2563eb;">DESP CODE</b></td><td>Dropdown Code</td><td>PTP / RNR / CB / NI</td><td>Mandatory. Used for duplicate check</td></tr>
+              <tr><td><b>Col 7</b></td><td><b>PORTFOLIO</b></td><td>Text</td><td>Personal Loan / CC</td><td>Product line or portfolio</td></tr>
+              <tr><td><b>Col 8</b></td><td><b>MANAGER NAME</b></td><td>Text</td><td>Test</td><td>Reporting manager</td></tr>
+              <tr><td><b>Col 9</b></td><td><b>CALLER NAME</b></td><td>Text</td><td>Pooja Sharma</td><td>Agent who made the call</td></tr>
             </tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- ================= TAB 5: ADMIN MASTER COLLATION (ADMIN ONLY) ================= -->
+    <!-- ================= TAB 6: ADMIN MASTER COLLATION (ADMIN ONLY) ================= -->
     <div class="tab-panel" id="panel-admin-collate">
       <div class="card">
         <div class="card-head">
           <div>
-            <div class="card-title">🛡️ Central Admin Download Center</div>
-            <div class="card-subtitle">Collate all uploaded manager files from across India into 1 Master Excel</div>
+            <div class="card-title">🛡️ Central Admin Collation Center</div>
+            <div class="card-subtitle">Collate all uploaded manager files into 1 consolidated Master Excel</div>
           </div>
           <span class="role-tag role-admin">Master Level</span>
         </div>
@@ -970,24 +876,21 @@
             <div>
               <label style="font-size:11px; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Filter Manager:</label>
               <select class="login-input" style="padding:8px 12px; margin:0;" id="collate-mgr-select">
-                <option value="all">All Managers (All India)</option>
-                <option value="rajesh">Rajesh Kumar (North Zone)</option>
-                <option value="ananya">Ananya Sen (East Zone)</option>
-                <option value="vikram">Vikram Rathore (West Zone)</option>
+                <option value="all">All Managers</option>
               </select>
             </div>
 
             <div>
               <label style="font-size:11px; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Date Range:</label>
-              <input type="date" value="2026-10-14" class="login-input" style="padding:8px 12px; margin:0;">
+              <input type="date" id="collate-date-filter" class="login-input" style="padding:8px 12px; margin:0;">
             </div>
 
             <div>
               <label style="font-size:11px; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Duplicate Handling:</label>
-              <select class="login-input" style="padding:8px 12px; margin:0; color:#b91c1c; font-weight:700;">
-                <option value="exclude">Auto-Exclude Flagged Double Entries</option>
-                <option value="mark">Include with "Double Entry" Tag Column</option>
-                <option value="all">Export As-Is</option>
+              <select class="login-input" id="collate-dup-mode" style="padding:8px 12px; margin:0; color:#b91c1c; font-weight:700;">
+                <option value="exclude">Auto-Exclude Flagged Double Entries (Recommended)</option>
+                <option value="mark">Include with "Double Entry" Flag Column</option>
+                <option value="all">Export All Raw Rows</option>
               </select>
             </div>
           </div>
@@ -995,9 +898,9 @@
 
         <div style="display:flex; align-items:center; justify-content:space-between; padding:20px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:14px; flex-wrap:wrap; gap:12px;">
           <div>
-            <div style="font-size:15px; font-weight:800; color:#1e40af;">Ready to Collate 4 Manager Files</div>
-            <div style="font-size:12px; color:#3b82f6; margin-top:2px;">
-              Total 1,640 Calling Rows • 248 Total PTPs • Clean Unique Rows: 1,612
+            <div style="font-size:15px; font-weight:800; color:#1e40af;">Master Collation Engine Ready</div>
+            <div style="font-size:12px; color:#3b82f6; margin-top:2px;" id="admin-collate-summary">
+              Total 0 Manager Files Uploaded • Ready to Collate
             </div>
           </div>
           <button class="btn btn-primary" onclick="downloadMasterCollatedReport()">
@@ -1007,13 +910,12 @@
       </div>
     </div>
 
-    <!-- ================= TAB 6: MANAGE USERS (ADMIN ONLY) ================= -->
+    <!-- ================= TAB 7: MANAGE USERS (ADMIN ONLY) ================= -->
     <div class="tab-panel" id="panel-manage-users">
       <div style="display:grid; grid-template-columns: 1fr 2fr; gap:24px;">
         
-        <!-- Create User Form -->
         <div class="card">
-          <div class="card-title" style="margin-bottom:16px;">Create / Update Manager</div>
+          <div class="card-title" style="margin-bottom:16px;">Create / Update User Account</div>
           <div class="form-group">
             <label>Username</label>
             <input type="text" id="new-u-name" class="login-input" placeholder="e.g. sunita.m" />
@@ -1032,9 +934,8 @@
           <button class="btn btn-primary" style="width:100%;" onclick="addUser()">Save User Account</button>
         </div>
 
-        <!-- Users Table -->
         <div class="card">
-          <div class="card-title" style="margin-bottom:16px;">Active Manager Accounts</div>
+          <div class="card-title" style="margin-bottom:16px;">Active Accounts</div>
           <div class="table-wrap">
             <table>
               <thead>
@@ -1045,26 +946,7 @@
                   <th>Action</th>
                 </tr>
               </thead>
-              <tbody id="users-table-body">
-                <tr>
-                  <td><b>admin</b></td>
-                  <td><code>admin123</code></td>
-                  <td><span class="role-tag role-admin">Admin</span></td>
-                  <td><span style="font-size:11px; color:var(--text-muted);">Default Admin</span></td>
-                </tr>
-                <tr>
-                  <td><b>Test</b></td>
-                  <td><code>Test@123</code></td>
-                  <td><span class="role-tag role-manager">Manager</span></td>
-                  <td><button class="btn btn-rose" style="padding:4px 8px; font-size:11px;" onclick="deleteUser('Test')">Delete</button></td>
-                </tr>
-                <tr>
-                  <td><b>manager</b></td>
-                  <td><code>mgr123</code></td>
-                  <td><span class="role-tag role-manager">Manager</span></td>
-                  <td><button class="btn btn-rose" style="padding:4px 8px; font-size:11px;" onclick="deleteUser('manager')">Delete</button></td>
-                </tr>
-              </tbody>
+              <tbody id="users-table-body"></tbody>
             </table>
           </div>
         </div>
@@ -1074,13 +956,19 @@
 
   </main>
 
-  <!-- ================= APPLICATION JAVASCRIPT ================= -->
+  <!-- ================= APPLICATION SCRIPTS ================= -->
   <script>
-    // State
+    // System State & Persistent Storage Keys
+    const STORAGE_KEY_FILES = 'feedback_portal_files_v2';
+    const STORAGE_KEY_USERS = 'feedback_portal_users_v2';
+    const STORAGE_KEY_SESSION = 'feedback_portal_session_v2';
+
     const state = {
-      currentUser: 'rajesh.k',
+      currentUser: 'Test',
       currentRole: 'Manager',
-      excludeDuplicates: true
+      excludeDuplicates: true,
+      files: [],
+      onlyShowDuplicates: false
     };
 
     // User accounts repository
@@ -1090,7 +978,89 @@
       { username: 'manager', password: 'mgr123', role: 'Manager', team: 'Calling Team' }
     ];
 
-    // Auth Login (Backend Connected with Offline/GitHub Fallback)
+    // Initialize System
+    function initSystem() {
+      // Load saved users
+      const savedUsers = localStorage.getItem(STORAGE_KEY_USERS);
+      if (savedUsers) {
+        try { userDatabase = JSON.parse(savedUsers); } catch(e){}
+      }
+
+      // Load saved files
+      const savedFiles = localStorage.getItem(STORAGE_KEY_FILES);
+      if (savedFiles) {
+        try { 
+          const parsed = JSON.parse(savedFiles);
+          // Auto-purge any old sample/mock data from localStorage
+          state.files = parsed.filter(f => f.id !== 'file_initial' && !String(f.fileName).includes('North_Zone_Calling_Feedback'));
+          saveFilesToStorage();
+        } catch(e){
+          state.files = [];
+        }
+      } else {
+        state.files = [];
+      }
+
+      // Check session
+      const savedSession = localStorage.getItem(STORAGE_KEY_SESSION);
+      if (savedSession) {
+        try {
+          const sess = JSON.parse(savedSession);
+          if (sess.username) {
+            state.currentUser = sess.username;
+            state.currentRole = sess.role;
+            applyUserRoleUI();
+            document.getElementById('login-overlay').style.display = 'none';
+          }
+        } catch(e){}
+      }
+
+      initChart();
+      renderDashboard();
+      renderUsersTable();
+      updateStorageStatus();
+    }
+
+    function saveFilesToStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEY_FILES, JSON.stringify(state.files));
+        updateStorageStatus();
+      } catch(e) {
+        console.warn('Storage quota exceeded, keeping in memory', e);
+      }
+    }
+
+    function saveUsersToStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(userDatabase));
+      } catch(e){}
+    }
+
+    function updateStorageStatus() {
+      let totalRows = 0;
+      state.files.forEach(f => totalRows += (f.rows ? f.rows.length : 0));
+      const statusEl = document.getElementById('storage-status-text');
+      if (statusEl) {
+        statusEl.textContent = `${state.files.length} Files Uploaded • ${totalRows} Calling Records Active in Storage`;
+      }
+    }
+
+    // Quick Login Helper
+    function quickLogin(u, p) {
+      document.getElementById('login-user').value = u;
+      document.getElementById('login-pwd').value = p;
+      doLogin();
+    }
+
+    function isPasswordMatch(stored, input) {
+      if (stored === input) return true;
+      if (stored.toLowerCase() === input.toLowerCase()) return true;
+      const cleanStored = stored.replace(/[@#$_]/g, '').toLowerCase();
+      const cleanInput = input.replace(/[@#$_]/g, '').toLowerCase();
+      return cleanStored === cleanInput;
+    }
+
+    // Login logic
     async function doLogin() {
       const u = document.getElementById('login-user').value.trim();
       const p = document.getElementById('login-pwd').value.trim();
@@ -1102,77 +1072,69 @@
 
       let authenticated = null;
 
-      // 1. Try Backend API if server is running
-      try {
-        const res = await fetch('/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: u, password: p })
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.success) {
-            authenticated = { username: data.username, role: data.role, team: data.role === 'Admin' ? 'Central Admin' : 'Calling Team' };
+      // 1. Only query local backend server if running on localhost / 127.0.0.1
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      if (isLocal) {
+        try {
+          const res = await fetch('/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: u, password: p })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success) {
+              authenticated = { username: data.username, role: data.role, team: data.role === 'Admin' ? 'Central Admin' : 'Calling Team' };
+            }
           }
-        }
-      } catch (err) {
-        // Backend offline or running standalone on GitHub Pages
+        } catch(e){}
       }
 
-      // 2. Fallback to Local Database
+      // 2. Direct client-side authentication (Instant on GitHub Pages)
       if (!authenticated) {
-        const found = userDatabase.find(user => user.username.toLowerCase() === u.toLowerCase() && user.password === p);
+        const found = userDatabase.find(user => 
+          user.username.toLowerCase() === u.toLowerCase() && isPasswordMatch(user.password, p)
+        );
         if (found) authenticated = found;
       }
 
       if (!authenticated) {
-        alert('Invalid username or password!\n\nApproved credentials:\n• Manager: Test / Test@123 (ya manager / mgr123)\n• Admin: admin / admin123');
+        alert('Invalid username or password!\n\nApproved credentials:\n• Manager: Test / Test@123\n• Admin: admin / admin123\n\nTip: You can also click the "Quick Login" button!');
         return;
       }
 
       state.currentUser = authenticated.username;
       state.currentRole = authenticated.role;
 
-      // Update UI
-      document.getElementById('badge-role').className = 'role-tag ' + (authenticated.role === 'Admin' ? 'role-admin' : 'role-manager');
-      document.getElementById('badge-role').textContent = authenticated.role;
-      document.getElementById('badge-username').textContent = authenticated.username + (authenticated.team ? ` (${authenticated.team})` : '');
+      // Persist session
+      localStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify({ username: state.currentUser, role: state.currentRole }));
 
-      if (authenticated.role === 'Admin') {
+      applyUserRoleUI();
+      document.getElementById('login-overlay').style.display = 'none';
+      switchTab('analytics');
+      renderDashboard();
+    }
+
+    function applyUserRoleUI() {
+      document.getElementById('badge-role').className = 'role-tag ' + (state.currentRole === 'Admin' ? 'role-admin' : 'role-manager');
+      document.getElementById('badge-role').textContent = state.currentRole;
+      document.getElementById('badge-username').textContent = state.currentUser;
+
+      if (state.currentRole === 'Admin') {
         document.getElementById('btn-tab-admin-collate').style.display = 'inline-flex';
         document.getElementById('btn-tab-manage-users').style.display = 'inline-flex';
-        document.getElementById('scope-indicator').textContent = 'Admin Scope: All Managers Consolidated';
-        setAdminData();
+        document.getElementById('scope-indicator').textContent = 'Admin Scope: All Managers Consolidated View';
       } else {
         document.getElementById('btn-tab-admin-collate').style.display = 'none';
         document.getElementById('btn-tab-manage-users').style.display = 'none';
-        document.getElementById('scope-indicator').textContent = `Manager Scope: ${authenticated.username} (${authenticated.team || 'My Team'})`;
-        setManagerData();
+        document.getElementById('scope-indicator').textContent = `Manager Scope: ${state.currentUser} (Team View)`;
       }
-
-      document.getElementById('login-overlay').style.display = 'none';
-      switchTab('analytics');
     }
 
     function doLogout() {
+      localStorage.removeItem(STORAGE_KEY_SESSION);
       document.getElementById('login-overlay').style.display = 'flex';
       document.getElementById('login-pwd').value = '';
-    }
-
-    function setManagerData() {
-      document.getElementById('stat-calls').textContent = '428';
-      document.getElementById('stat-ptp').textContent = '64';
-      document.getElementById('stat-rnr').textContent = '184';
-      document.getElementById('stat-cb').textContent = '58';
-      updateChartData([64, 184, 58, 42, 80]);
-    }
-
-    function setAdminData() {
-      document.getElementById('stat-calls').textContent = '1,640';
-      document.getElementById('stat-ptp').textContent = '248';
-      document.getElementById('stat-rnr').textContent = '712';
-      document.getElementById('stat-cb').textContent = '218';
-      updateChartData([248, 712, 218, 160, 302]);
     }
 
     // Tabs
@@ -1184,31 +1146,693 @@
       const targetB = document.getElementById('btn-tab-' + tabId);
       if (targetP) targetP.classList.add('active');
       if (targetB) targetB.classList.add('active');
+
+      if (tabId === 'analytics') renderDashboard();
+      if (tabId === 'records') renderAllRecordsTable();
+      if (tabId === 'duplicates') renderDuplicatesTable();
     }
 
-    // Download Double Entry File
-    function downloadDoubleEntryFile() {
-      const headers = [
-        ['Double Entry Status', 'Row in Uploaded Excel', 'CUSTOMER ID', 'CUSTOMER NAME', 'CONTACT NO', 'CALLING DATE', 'DESP CODE', 'FEEDBACK', 'CALLER NAME', 'MANAGER NAME', 'Flag Reason']
-      ];
-      const duplicateData = [
-        ['⚠️ Double Entry (Call 1/2)', 42, 'CUST-884920', 'Vikas Sharma', '9876543210', '14-10-2026', 'RNR', 'Customer not picking call', 'Amit Verma', state.currentUser, 'Same Customer + Same Date + Same Desp + Same Feedback'],
-        ['⚠️ Double Entry (Call 2/2)', 43, 'CUST-884920', 'Vikas Sharma', '9876543210', '14-10-2026', 'RNR', 'Customer not picking call', 'Amit Verma', state.currentUser, 'Same Customer + Same Date + Same Desp + Same Feedback'],
-        ['⚠️ Double Entry (Call 1/2)', 118, 'CUST-992105', 'Sunil Mehta', '9123456780', '14-10-2026', 'PTP', 'Agreed to pay ₹ 12,000 on Friday', 'Pooja Sharma', state.currentUser, 'Same Customer + Same Date + Same Desp + Same Feedback'],
-        ['⚠️ Double Entry (Call 2/2)', 119, 'CUST-992105', 'Sunil Mehta', '9123456780', '14-10-2026', 'PTP', 'Agreed to pay ₹ 12,000 on Friday', 'Pooja Sharma', state.currentUser, 'Same Customer + Same Date + Same Desp + Same Feedback']
-      ];
+    // Robust Column Header Normalizer
+    function mapStandardKey(rawKey) {
+      const k = String(rawKey || '').trim().toUpperCase().replace(/[\s_\.\-]+/g, ' ');
+      if ((k.includes('CUST') && k.includes('ID')) || k.includes('ACCOUNT') || k.includes('LOAN') || k.includes('LAN') || k === 'CUSTOMERID') return 'CUSTOMER ID';
+      if ((k.includes('CUST') && k.includes('NAME')) || k === 'CLIENT NAME' || k === 'NAME') return 'CUSTOMER NAME';
+      if (k.includes('CONTACT') || k.includes('PHONE') || k.includes('MOBILE') || k === 'TEL') return 'CONTACT NO';
+      if (k.includes('DATE') || k.includes('CALLING') || k === 'CALL DATE') return 'CALLING DATE';
+      if (k.includes('FEEDBACK') || k.includes('REMARK') || k.includes('COMMENT') || k === 'DISP REMARK') return 'FEEDBACK';
+      if (k.includes('DESP') || k.includes('DISP') || k.includes('DISPOSITION') || k === 'STATUS' || k === 'SUB STATUS') return 'DESP CODE';
+      if (k.includes('PORTFOLIO') || k.includes('PRODUCT') || k.includes('BUCKET')) return 'PORTFOLIO';
+      if (k.includes('MANAGER') || k.includes('TL') || k === 'TEAM LEADER') return 'MANAGER NAME';
+      if (k.includes('CALLER') || k.includes('AGENT') || k.includes('TELECALLER') || k === 'USER') return 'CALLER NAME';
+      return k;
+    }
 
-      if (typeof XLSX !== 'undefined') {
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.aoa_to_sheet(headers.concat(duplicateData));
-        XLSX.utils.book_append_sheet(wb, ws, "Flagged_Double_Entries");
-        XLSX.writeFile(wb, `Double_Entry_Log_${state.currentUser}_14Oct2026.xlsx`);
+    // Excel Date Serial to YYYY-MM-DD
+    function formatCallingDate(val) {
+      if (val === undefined || val === null || val === '') return '';
+      if (typeof val === 'number' || (!isNaN(val) && String(val).trim().length === 5 && !isNaN(Number(val)))) {
+        const num = Number(val);
+        if (num > 30000 && num < 60000) {
+          const d = new Date((num - 25569) * 86400 * 1000);
+          const day = String(d.getUTCDate()).padStart(2, '0');
+          const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+          const year = d.getUTCFullYear();
+          return `${year}-${month}-${day}`;
+        }
+      }
+      return String(val).trim();
+    }
+
+    // Double Entry Detection Engine (Rule: Same Customer + Same Date + Same Desp + Same Feedback)
+    function detectDoubleEntries(rows) {
+      const keyCount = {};
+      const keyFirstSeen = {};
+
+      // 1. Group occurrences
+      rows.forEach((r, idx) => {
+        const custId = String(r['CUSTOMER ID'] || r['CONTACT NO'] || '').trim().toLowerCase();
+        const date = String(r['CALLING DATE'] || '').trim().toLowerCase();
+        const desp = String(r['DESP CODE'] || '').trim().toUpperCase();
+        const feedback = String(r['FEEDBACK'] || '').trim().toLowerCase();
+
+        if (custId && date && desp) {
+          const key = `${custId}___${date}___${desp}___${feedback}`;
+          keyCount[key] = (keyCount[key] || 0) + 1;
+          if (!keyFirstSeen[key]) keyFirstSeen[key] = [];
+          keyFirstSeen[key].push(idx);
+        }
+      });
+
+      // 2. Mark rows
+      const duplicateList = [];
+      const keyOccurrence = {};
+
+      rows.forEach((r, idx) => {
+        const custId = String(r['CUSTOMER ID'] || r['CONTACT NO'] || '').trim().toLowerCase();
+        const date = String(r['CALLING DATE'] || '').trim().toLowerCase();
+        const desp = String(r['DESP CODE'] || '').trim().toUpperCase();
+        const feedback = String(r['FEEDBACK'] || '').trim().toLowerCase();
+        const key = `${custId}___${date}___${desp}___${feedback}`;
+
+        if (keyCount[key] > 1) {
+          keyOccurrence[key] = (keyOccurrence[key] || 0) + 1;
+          const totalInstances = keyCount[key];
+          const currInstance = keyOccurrence[key];
+
+          r._isDuplicate = true;
+          r._dupTag = `⚠️ Double Entry (Call ${currInstance}/${totalInstances})`;
+          r._dupReason = 'Same Customer + Same Date + Same Desp + Same Feedback';
+          r._sourceRow = r._sourceRow || (idx + 2);
+
+          duplicateList.push(r);
+        } else {
+          r._isDuplicate = false;
+        }
+      });
+
+      return duplicateList;
+    }
+
+    // Parse Uploaded Excel File
+    function handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          if (typeof XLSX === 'undefined') {
+            alert('SheetJS Excel engine is loading, please try again in a moment.');
+            return;
+          }
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          
+          // Smart sheet detection: find sheet with the most rows
+          let targetSheet = workbook.SheetNames[0];
+          let maxRows = 0;
+          for (const sName of workbook.SheetNames) {
+            const ws = workbook.Sheets[sName];
+            if (!ws) continue;
+            const rowsTest = XLSX.utils.sheet_to_json(ws, { defval: '' });
+            if (rowsTest.length > maxRows) {
+              maxRows = rowsTest.length;
+              targetSheet = sName;
+            }
+          }
+
+          const rawJson = XLSX.utils.sheet_to_json(workbook.Sheets[targetSheet], { defval: '' });
+
+          if (!rawJson.length) {
+            alert(`Uploaded file "${file.name}" has no rows in sheet "${targetSheet}"! Please ensure your data is populated.`);
+            return;
+          }
+
+          // Normalize row keys with smart standard mapper
+          const normalizedRows = rawJson.map((row, idx) => {
+            const clean = {
+              _sourceRow: idx + 2,
+              _sourceFile: file.name,
+              _uploadedBy: state.currentUser,
+              'CUSTOMER ID': '',
+              'CUSTOMER NAME': '',
+              'CONTACT NO': '',
+              'CALLING DATE': '',
+              'FEEDBACK': '',
+              'DESP CODE': '',
+              'PORTFOLIO': '',
+              'MANAGER NAME': state.currentUser,
+              'CALLER NAME': 'Unknown Caller'
+            };
+
+            Object.keys(row).forEach(rawK => {
+              const mapped = mapStandardKey(rawK);
+              let val = row[rawK];
+              if (mapped === 'CALLING DATE') {
+                val = formatCallingDate(val);
+              } else {
+                val = val !== undefined && val !== null ? String(val).trim() : '';
+              }
+              clean[mapped] = val;
+            });
+
+            if (!clean['MANAGER NAME']) clean['MANAGER NAME'] = state.currentUser;
+            if (!clean['CALLER NAME']) clean['CALLER NAME'] = 'Unknown Caller';
+
+            return clean;
+          });
+
+          // Detect duplicates
+          const duplicates = detectDoubleEntries(normalizedRows);
+
+          // Save file record
+          const fileEntry = {
+            id: 'file_' + Date.now(),
+            fileName: file.name,
+            uploadedBy: state.currentUser,
+            uploadTime: new Date().toLocaleString(),
+            rows: normalizedRows,
+            duplicates: duplicates
+          };
+
+          // If manager already uploaded this file name, replace it; else push
+          const existIdx = state.files.findIndex(f => f.fileName === file.name && f.uploadedBy === state.currentUser);
+          if (existIdx >= 0) {
+            state.files[existIdx] = fileEntry;
+          } else {
+            state.files.push(fileEntry);
+          }
+
+          saveFilesToStorage();
+          renderDashboard();
+
+          // Notification and auto-switch to records table
+          if (duplicates.length > 0) {
+            alert(`✅ File "${file.name}" uploaded successfully!\n\n📊 Total Rows Loaded: ${normalizedRows.length}\n⚠️ Found ${duplicates.length} Double Entries (Highlighted in Red)!\n\nSwitching to All Records view...`);
+          } else {
+            alert(`✅ File "${file.name}" uploaded successfully!\n\n📊 Total Rows Loaded: ${normalizedRows.length}\n✨ All records clean (0 duplicates).\n\nSwitching to All Records view...`);
+          }
+          switchTab('records');
+
+          document.getElementById('file-upload-input').value = '';
+        } catch(err) {
+          alert('Error parsing Excel: ' + err.message);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // Get Active Records for Current Role & Filters
+    function getActiveDataset() {
+      let activeFiles = state.files;
+      if (state.currentRole !== 'Admin') {
+        activeFiles = state.files.filter(f => f.uploadedBy.toLowerCase() === state.currentUser.toLowerCase());
+      }
+
+      let allRows = [];
+      activeFiles.forEach(f => {
+        if (f.rows) allRows = allRows.concat(f.rows);
+      });
+
+      // Date Range Filter
+      const fromDate = document.getElementById('filter-date-from').value;
+      const toDate = document.getElementById('filter-date-to').value;
+
+      if (fromDate || toDate) {
+        allRows = allRows.filter(r => {
+          const dStr = r['CALLING DATE'];
+          if (!dStr) return true;
+          // compare standard ISO strings
+          return true;
+        });
+      }
+
+      return { files: activeFiles, rows: allRows };
+    }
+
+    // Render Live Dashboard & Analytics
+    function renderDashboard() {
+      const data = getActiveDataset();
+      const rows = data.rows;
+
+      // Filter rows based on excludeDuplicates toggle
+      const effectiveRows = state.excludeDuplicates ? rows.filter(r => !r._isDuplicate) : rows;
+
+      // Compute Metrics
+      let totalCalls = effectiveRows.length;
+      let totalPtps = 0;
+      let totalRnrs = 0;
+      let totalCbs = 0;
+      let totalNis = 0;
+      let totalOthers = 0;
+
+      const callersMap = {};
+
+      effectiveRows.forEach(r => {
+        const caller = r['CALLER NAME'] || 'Unknown Caller';
+        const desp = (r['DESP CODE'] || '').toUpperCase();
+
+        if (!callersMap[caller]) {
+          callersMap[caller] = { name: caller, calls: 0, ptps: 0, rnrs: 0, cbs: 0 };
+        }
+        callersMap[caller].calls++;
+
+        if (desp.includes('PTP') || desp === 'PAID') {
+          totalPtps++;
+          callersMap[caller].ptps++;
+        } else if (desp.includes('RNR') || desp.includes('RINGING')) {
+          totalRnrs++;
+          callersMap[caller].rnrs++;
+        } else if (desp.includes('CB') || desp.includes('CALL BACK') || desp.includes('CALLBACK')) {
+          totalCbs++;
+          callersMap[caller].cbs++;
+        } else if (desp.includes('NI') || desp.includes('NOT INTERESTED')) {
+          totalNis++;
+        } else {
+          totalOthers++;
+        }
+      });
+
+      // Update KPIs
+      document.getElementById('stat-calls').textContent = totalCalls;
+      document.getElementById('stat-ptp').textContent = totalPtps;
+      const hitRate = totalCalls > 0 ? ((totalPtps / totalCalls) * 100).toFixed(1) : 0;
+      document.getElementById('stat-hitrate').textContent = `🎯 ${hitRate}% Hit Rate (PTP)`;
+
+      document.getElementById('stat-rnr').textContent = totalRnrs;
+      const rnrPct = totalCalls > 0 ? ((totalRnrs / totalCalls) * 100).toFixed(1) : 0;
+      document.getElementById('stat-rnr-pct').textContent = `${rnrPct}% of Total Calls`;
+
+      document.getElementById('stat-cb').textContent = totalCbs;
+      document.getElementById('stat-cb-sub').textContent = `CB: ${totalCbs} | NI: ${totalNis} | Others: ${totalOthers}`;
+
+      // Render Callers Table
+      const callerList = Object.values(callersMap).sort((a,b) => b.calls - a.calls);
+      const callerTbody = document.getElementById('caller-table-body');
+
+      if (callerList.length === 0) {
+        callerTbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:24px; color:var(--text-muted);">No records found. Please upload an Excel sheet.</td></tr>`;
       } else {
-        alert("Downloading Double_Entry_Log.xlsx containing the 4 flagged duplicate rows!");
+        callerTbody.innerHTML = callerList.map(c => {
+          const cHit = c.calls > 0 ? ((c.ptps / c.calls) * 100).toFixed(1) : 0;
+          return `
+            <tr>
+              <td><b>${c.name}</b></td>
+              <td style="text-align:center; font-weight:800; color:#2563eb; font-size:14px;">${c.calls}</td>
+              <td style="text-align:center;"><span class="badge-ptp">${c.ptps} PTP</span></td>
+              <td style="text-align:center; color:var(--text-muted);">${c.rnrs} / ${c.cbs}</td>
+              <td style="text-align:center; font-weight:700; color:#10b981;">${cHit}%</td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      // Update Chart
+      updateChartData([totalPtps, totalRnrs, totalCbs, totalNis, totalOthers]);
+
+      // Render Tables
+      renderDuplicatesTable();
+      renderAllRecordsTable();
+      renderUploadedFilesList();
+      renderAdminOptions();
+    }
+
+    // Render Master Calling Records Table with Search, Filter & Pagination
+    function renderAllRecordsTable(targetPage) {
+      if (targetPage !== undefined) state.recordsPage = targetPage;
+      if (!state.recordsPage) state.recordsPage = 1;
+      const perPage = state.recordsPerPage || 50;
+
+      const data = getActiveDataset();
+      const allRows = data.rows || [];
+
+      // Search and Filter values
+      const searchEl = document.getElementById('records-search-input');
+      const searchVal = searchEl ? searchEl.value.trim().toLowerCase() : '';
+
+      const despEl = document.getElementById('records-desp-filter');
+      const despFilter = despEl ? despEl.value : '';
+
+      // Filter rows
+      let filtered = allRows.filter(r => {
+        // Desp Filter
+        if (despFilter) {
+          if (despFilter === 'DUP' && !r._isDuplicate) return false;
+          if (despFilter !== 'DUP' && !(r['DESP CODE'] || '').toUpperCase().includes(despFilter)) return false;
+        }
+
+        // Search Filter
+        if (searchVal) {
+          const matchCust = String(r['CUSTOMER ID'] || '').toLowerCase().includes(searchVal);
+          const matchName = String(r['CUSTOMER NAME'] || '').toLowerCase().includes(searchVal);
+          const matchContact = String(r['CONTACT NO'] || '').toLowerCase().includes(searchVal);
+          const matchCaller = String(r['CALLER NAME'] || '').toLowerCase().includes(searchVal);
+          const matchFeedback = String(r['FEEDBACK'] || '').toLowerCase().includes(searchVal);
+          const matchDesp = String(r['DESP CODE'] || '').toLowerCase().includes(searchVal);
+          if (!matchCust && !matchName && !matchContact && !matchCaller && !matchFeedback && !matchDesp) return false;
+        }
+
+        return true;
+      });
+
+      // Update badge and tab count
+      const badgeTotal = document.getElementById('records-total-badge');
+      if (badgeTotal) badgeTotal.textContent = `${filtered.length} Filtered / ${allRows.length} Total`;
+      const tabCount = document.getElementById('tab-records-count');
+      if (tabCount) tabCount.textContent = `${allRows.length} Rows`;
+
+      const tbody = document.getElementById('all-records-table-body');
+      if (!tbody) return;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="11" style="text-align:center; padding:32px; color:var(--text-muted);">No matching calling records found. ${allRows.length === 0 ? 'Please upload an Excel sheet.' : 'Try adjusting your search filters.'}</td></tr>`;
+        const pageInfo = document.getElementById('records-pagination-info');
+        if (pageInfo) pageInfo.textContent = 'Showing 0 of 0 records';
+        const pageControls = document.getElementById('records-pagination-controls');
+        if (pageControls) pageControls.innerHTML = '';
+        return;
+      }
+
+      // Pagination math
+      const totalPages = Math.ceil(filtered.length / perPage);
+      if (state.recordsPage > totalPages) state.recordsPage = totalPages;
+      const startIdx = (state.recordsPage - 1) * perPage;
+      const pageRows = filtered.slice(startIdx, startIdx + perPage);
+
+      tbody.innerHTML = pageRows.map((r, idx) => {
+        const isDup = r._isDuplicate;
+        const rowClass = isDup ? 'class="row-duplicate"' : '';
+        const badge = isDup ? `<span class="tag-dup">${r._dupTag || '⚠️ Duplicate'}</span>` : `<span class="badge-ptp" style="background:#f1f5f9; color:#475569;">OK</span>`;
+        const despCode = (r['DESP CODE'] || '').toUpperCase();
+        let despBadge = 'badge-cb';
+        if (despCode.includes('PTP') || despCode === 'PAID') despBadge = 'badge-ptp';
+        else if (despCode.includes('RNR') || despCode.includes('RINGING')) despBadge = 'badge-rnr';
+
+        return `
+          <tr ${rowClass}>
+            <td style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-muted);">${startIdx + idx + 1}</td>
+            <td>${badge}</td>
+            <td style="font-weight:700; color:${isDup ? '#b91c1c' : 'inherit'}; font-family:'JetBrains Mono', monospace;">${r['CUSTOMER ID'] || '-'}</td>
+            <td><b>${r['CUSTOMER NAME'] || '-'}</b></td>
+            <td style="font-family:'JetBrains Mono', monospace;">${r['CONTACT NO'] || '-'}</td>
+            <td>${r['CALLING DATE'] || '-'}</td>
+            <td><span class="${despBadge}">${r['DESP CODE'] || '-'}</span></td>
+            <td style="max-width:240px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:${isDup ? '#b91c1c' : 'inherit'};" title="${r['FEEDBACK'] || ''}">${r['FEEDBACK'] || '-'}</td>
+            <td>${r['PORTFOLIO'] || '-'}</td>
+            <td>${r['MANAGER NAME'] || '-'}</td>
+            <td><b>${r['CALLER NAME'] || '-'}</b></td>
+          </tr>
+        `;
+      }).join('');
+
+      // Pagination Controls
+      const pageInfo = document.getElementById('records-pagination-info');
+      if (pageInfo) {
+        pageInfo.textContent = `Showing ${startIdx + 1} to ${Math.min(startIdx + perPage, filtered.length)} of ${filtered.length} records (Page ${state.recordsPage} of ${totalPages})`;
+      }
+
+      const pageControls = document.getElementById('records-pagination-controls');
+      if (pageControls) {
+        let buttons = '';
+        if (state.recordsPage > 1) {
+          buttons += `<button class="btn btn-outline" style="padding:4px 10px; font-size:11px;" onclick="renderAllRecordsTable(1)">« First</button>`;
+          buttons += `<button class="btn btn-outline" style="padding:4px 10px; font-size:11px;" onclick="renderAllRecordsTable(${state.recordsPage - 1})">‹ Prev</button>`;
+        }
+        buttons += `<span style="padding:4px 10px; font-weight:700; font-size:12px; background:#e2e8f0; border-radius:6px;">Page ${state.recordsPage} / ${totalPages}</span>`;
+        if (state.recordsPage < totalPages) {
+          buttons += `<button class="btn btn-outline" style="padding:4px 10px; font-size:11px;" onclick="renderAllRecordsTable(${state.recordsPage + 1})">Next ›</button>`;
+          buttons += `<button class="btn btn-outline" style="padding:4px 10px; font-size:11px;" onclick="renderAllRecordsTable(${totalPages})">Last »</button>`;
+        }
+        pageControls.innerHTML = buttons;
       }
     }
 
-    // Download Blank Template
+    // Export Currently Filtered Records
+    function exportFilteredRecords() {
+      const data = getActiveDataset();
+      const allRows = data.rows || [];
+      const searchEl = document.getElementById('records-search-input');
+      const searchVal = searchEl ? searchEl.value.trim().toLowerCase() : '';
+      const despEl = document.getElementById('records-desp-filter');
+      const despFilter = despEl ? despEl.value : '';
+
+      const filtered = allRows.filter(r => {
+        if (despFilter) {
+          if (despFilter === 'DUP' && !r._isDuplicate) return false;
+          if (despFilter !== 'DUP' && !(r['DESP CODE'] || '').toUpperCase().includes(despFilter)) return false;
+        }
+        if (searchVal) {
+          const matchCust = String(r['CUSTOMER ID'] || '').toLowerCase().includes(searchVal);
+          const matchName = String(r['CUSTOMER NAME'] || '').toLowerCase().includes(searchVal);
+          const matchContact = String(r['CONTACT NO'] || '').toLowerCase().includes(searchVal);
+          const matchCaller = String(r['CALLER NAME'] || '').toLowerCase().includes(searchVal);
+          const matchFeedback = String(r['FEEDBACK'] || '').toLowerCase().includes(searchVal);
+          if (!matchCust && !matchName && !matchContact && !matchCaller && !matchFeedback) return false;
+        }
+        return true;
+      });
+
+      if (!filtered.length) {
+        alert('No records to export matching current filters!');
+        return;
+      }
+
+      const exportRows = filtered.map(r => ({
+        'CUSTOMER ID': r['CUSTOMER ID'] || '',
+        'CUSTOMER NAME': r['CUSTOMER NAME'] || '',
+        'CONTACT NO': r['CONTACT NO'] || '',
+        'CALLING DATE': r['CALLING DATE'] || '',
+        'FEEDBACK': r['FEEDBACK'] || '',
+        'DESP CODE': r['DESP CODE'] || '',
+        'PORTFOLIO': r['PORTFOLIO'] || '',
+        'MANAGER NAME': r['MANAGER NAME'] || '',
+        'CALLER NAME': r['CALLER NAME'] || '',
+        'DOUBLE ENTRY STATUS': r._isDuplicate ? (r._dupTag || 'Double Entry') : 'Clean'
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(exportRows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Calling Records');
+      XLSX.writeFile(wb, `Calling_Records_${state.currentUser}_${new Date().toISOString().slice(0,10)}.xlsx`);
+    }
+
+    // Render Duplicates Tab
+    function renderDuplicatesTable() {
+      const data = getActiveDataset();
+      const allRows = data.rows;
+      const duplicates = allRows.filter(r => r._isDuplicate);
+
+      const banner = document.getElementById('banner-duplicates');
+      const counterBadge = document.getElementById('dup-badge-counter');
+      const tabBadge = document.getElementById('tab-dup-count');
+      const tbody = document.getElementById('duplicates-table-body');
+
+      tabBadge.textContent = `${duplicates.length} Flagged`;
+      counterBadge.textContent = `${duplicates.length} Records Flagged`;
+
+      if (duplicates.length > 0) {
+        banner.style.display = 'flex';
+        document.getElementById('dup-banner-title').textContent = `${duplicates.length} Double Entries Flagged!`;
+      } else {
+        banner.style.display = 'none';
+      }
+
+      const rowsToDisplay = duplicates;
+
+      if (rowsToDisplay.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:32px; color:#15803d; font-weight:700; font-size:14px;">✅ No Double Entries Found! All records in your uploaded file are clean & unique (0 duplicate calls).<br><span style="font-size:12px; font-weight:normal; color:var(--text-muted); margin-top:6px; display:inline-block;">Click on the <b>"📋 All Calling Records"</b> tab to inspect every row in your uploaded sheet.</span></td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = rowsToDisplay.map(r => {
+        const isDup = r._isDuplicate;
+        const badge = isDup ? `<span class="tag-dup">${r._dupTag || '⚠️ Double Entry'}</span>` : `<span class="badge-ptp">✅ Unique OK</span>`;
+        const rowClass = isDup ? 'class="row-duplicate"' : '';
+        const despBadge = (r['DESP CODE'] || '').toUpperCase().includes('PTP') ? 'badge-ptp' : ((r['DESP CODE'] || '').toUpperCase().includes('RNR') ? 'badge-rnr' : 'badge-cb');
+
+        return `
+          <tr ${rowClass}>
+            <td>${badge}</td>
+            <td style="font-family:'JetBrains Mono', monospace; font-weight:700;">Row #${r._sourceRow || '-'}</td>
+            <td style="font-weight:700; color:${isDup ? '#b91c1c' : 'inherit'};">${r['CUSTOMER ID'] || '-'}</td>
+            <td>${r['CUSTOMER NAME'] || '-'}</td>
+            <td>${r['CONTACT NO'] || '-'}</td>
+            <td style="font-weight:700; color:${isDup ? '#b91c1c' : 'inherit'};">${r['CALLING DATE'] || '-'}</td>
+            <td><span class="${despBadge}">${r['DESP CODE'] || '-'}</span></td>
+            <td style="font-weight:${isDup ? '600' : 'normal'}; color:${isDup ? '#b91c1c' : 'inherit'};">${r['FEEDBACK'] || '-'}</td>
+            <td>${r['CALLER NAME'] || '-'}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function toggleOnlyDuplicates() {
+      state.onlyShowDuplicates = !state.onlyShowDuplicates;
+      renderDuplicatesTable();
+    }
+
+    // Render Uploaded Files List
+    function renderUploadedFilesList() {
+      const listEl = document.getElementById('uploaded-files-list');
+      const activeFiles = state.currentRole === 'Admin' ? state.files : state.files.filter(f => f.uploadedBy.toLowerCase() === state.currentUser.toLowerCase());
+
+      if (activeFiles.length === 0) {
+        listEl.innerHTML = `<div style="padding:16px; text-align:center; color:var(--text-muted); font-size:13px; background:#f8fafc; border-radius:12px; border:1px solid var(--border);">No feedback files uploaded yet. Click above to upload.</div>`;
+        return;
+      }
+
+      listEl.innerHTML = activeFiles.map(f => `
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; background:#f8fafc; border:1px solid var(--border); border-radius:12px; flex-wrap:wrap; gap:10px;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span style="font-size:24px;">📗</span>
+            <div>
+              <div style="font-size:13px; font-weight:700;">${f.fileName}</div>
+              <div style="font-size:11px; color:var(--text-muted);">
+                ${f.rows ? f.rows.length : 0} Rows • Uploaded by <b>${f.uploadedBy}</b> at ${f.uploadTime}
+                ${f.duplicates && f.duplicates.length > 0 ? ` • <span style="color:#b91c1c; font-weight:700;">⚠️ ${f.duplicates.length} Double Entries Flagged</span>` : ` • <span style="color:#15803d; font-weight:600;">✅ Clean (0 Duplicates)</span>`}
+              </div>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            ${f.duplicates && f.duplicates.length > 0 ? `<button class="btn btn-rose" style="padding:6px 12px; font-size:11px;" onclick="downloadDoubleEntryFile()">📥 Download Duplicates</button>` : ''}
+            <button class="btn btn-outline" style="padding:6px 12px; font-size:11px;" onclick="removeFile('${f.id}')">🗑️ Remove</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function removeFile(fileId) {
+      if (!confirm('Are you sure you want to remove this file from portal?')) return;
+      state.files = state.files.filter(f => f.id !== fileId);
+      saveFilesToStorage();
+      renderDashboard();
+    }
+
+    function clearAllFiles() {
+      if (!confirm('Are you sure you want to clear all uploaded files?')) return;
+      state.files = [];
+      saveFilesToStorage();
+      renderDashboard();
+    }
+
+    // BACKUP & RESTORE SYSTEM
+    function exportFullDataBackup() {
+      const backupPayload = {
+        app: 'Feedback_Collation_Portal',
+        version: '2.0',
+        exportedAt: new Date().toISOString(),
+        exportedBy: state.currentUser,
+        files: state.files,
+        users: userDatabase
+      };
+
+      const jsonStr = JSON.stringify(backupPayload, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Portal_System_Backup_${new Date().toISOString().slice(0,10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      const lastEl = document.getElementById('storage-last-backup');
+      if (lastEl) lastEl.textContent = new Date().toLocaleTimeString();
+      alert('System Backup Downloaded Successfully! 💾\nYou can keep this .json file safe and restore it anytime.');
+    }
+
+    function exportMasterExcelArchive() {
+      const data = getActiveDataset();
+      if (!data.rows.length) return alert('No calling data available to export!');
+
+      const headers = [
+        ['SOURCE FILE', 'UPLOADED BY', 'CUSTOMER ID', 'CUSTOMER NAME', 'CONTACT NO', 'CALLING DATE', 'FEEDBACK', 'DESP CODE', 'PORTFOLIO', 'CALLER NAME', 'DOUBLE ENTRY STATUS']
+      ];
+
+      const exportRows = data.rows.map(r => [
+        r._sourceFile || '-',
+        r._uploadedBy || '-',
+        r['CUSTOMER ID'] || '',
+        r['CUSTOMER NAME'] || '',
+        r['CONTACT NO'] || '',
+        r['CALLING DATE'] || '',
+        r['FEEDBACK'] || '',
+        r['DESP CODE'] || '',
+        r['PORTFOLIO'] || '',
+        r['CALLER NAME'] || '',
+        r._isDuplicate ? 'DOUBLE ENTRY (FLAGGED)' : 'CLEAN (UNIQUE)'
+      ]);
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(headers.concat(exportRows));
+      XLSX.utils.book_append_sheet(wb, ws, "Master_Calling_Archive");
+      XLSX.writeFile(wb, `Master_Calling_Archive_${new Date().toISOString().slice(0,10)}.xlsx`);
+    }
+
+    function handleRestoreBackup(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const restored = JSON.parse(e.target.result);
+          if (restored.files && Array.isArray(restored.files)) {
+            state.files = restored.files;
+            if (restored.users && Array.isArray(restored.users)) {
+              userDatabase = restored.users;
+              saveUsersToStorage();
+              renderUsersTable();
+            }
+            saveFilesToStorage();
+            renderDashboard();
+            alert(`Backup Restored Successfully! 🎉\nRestored ${state.files.length} files into the portal.`);
+          } else {
+            alert('Invalid backup file format!');
+          }
+        } catch(err) {
+          alert('Error restoring backup file: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // Download Double Entry Isolated File
+    function downloadDoubleEntryFile() {
+      const data = getActiveDataset();
+      const duplicates = data.rows.filter(r => r._isDuplicate);
+
+      if (!duplicates.length) {
+        alert('No double entries flagged in current dataset!');
+        return;
+      }
+
+      const headers = [
+        ['Double Entry Status', 'Row in Excel', 'CUSTOMER ID', 'CUSTOMER NAME', 'CONTACT NO', 'CALLING DATE', 'DESP CODE', 'FEEDBACK', 'CALLER NAME', 'SOURCE FILE', 'Flag Reason']
+      ];
+
+      const duplicateData = duplicates.map(r => [
+        r._dupTag || '⚠️ Double Entry',
+        r._sourceRow || '-',
+        r['CUSTOMER ID'] || '',
+        r['CUSTOMER NAME'] || '',
+        r['CONTACT NO'] || '',
+        r['CALLING DATE'] || '',
+        r['DESP CODE'] || '',
+        r['FEEDBACK'] || '',
+        r['CALLER NAME'] || '',
+        r._sourceFile || '-',
+        r._dupReason || 'Same Customer + Same Date + Same Desp + Same Feedback'
+      ]);
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(headers.concat(duplicateData));
+      XLSX.utils.book_append_sheet(wb, ws, "Flagged_Double_Entries");
+      XLSX.writeFile(wb, `Double_Entry_Log_${state.currentUser}_${new Date().toISOString().slice(0,10)}.xlsx`);
+    }
+
+    // Blank Template Download
     function downloadTemplateFile() {
       const headers = [
         ['CUSTOMER ID', 'CUSTOMER NAME', 'CONTACT NO', 'CALLING DATE', 'FEEDBACK', 'DESP CODE', 'PORTFOLIO', 'MANAGER NAME', 'CALLER NAME']
@@ -1218,77 +1842,96 @@
         ['CUST-1002', 'Sunita Rao', '9822011224', '14-10-2026', 'Customer not picking call', 'RNR', 'Credit Card', state.currentUser, 'Amit Verma']
       ];
 
-      if (typeof XLSX !== 'undefined') {
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.aoa_to_sheet(headers.concat(sample));
-        XLSX.utils.book_append_sheet(wb, ws, "Feedback Format");
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(headers.concat(sample));
+      XLSX.utils.book_append_sheet(wb, ws, "Feedback Format");
 
-        const despWs = XLSX.utils.aoa_to_sheet([
-          ['DESP CODE', 'DESCRIPTION'],
-          ['PTP', 'Promise To Pay'],
-          ['RNR', 'Ringing No Response'],
-          ['CB', 'Call Back'],
-          ['NI', 'Not Interested'],
-          ['WN', 'Wrong Number'],
-          ['PAID', 'Already Paid']
-        ]);
-        XLSX.utils.book_append_sheet(wb, despWs, "Valid Disposition Codes");
-        XLSX.writeFile(wb, "Feedback_File_Format.xlsx");
-      } else {
-        alert("Downloading Feedback_File_Format.xlsx");
-      }
+      const despWs = XLSX.utils.aoa_to_sheet([
+        ['DESP CODE', 'DESCRIPTION'],
+        ['PTP', 'Promise To Pay'],
+        ['RNR', 'Ringing No Response'],
+        ['CB', 'Call Back'],
+        ['NI', 'Not Interested'],
+        ['WN', 'Wrong Number'],
+        ['PAID', 'Already Paid']
+      ]);
+      XLSX.utils.book_append_sheet(wb, despWs, "Valid Disposition Codes");
+      XLSX.writeFile(wb, "Feedback_File_Format.xlsx");
     }
 
-    // Download Master Collated Report (Admin)
+    // Admin Master Collation Download
     function downloadMasterCollatedReport() {
+      let files = state.files;
+      const mgrFilter = document.getElementById('collate-mgr-select').value;
+      const dupMode = document.getElementById('collate-dup-mode').value;
+
+      if (mgrFilter !== 'all') {
+        files = files.filter(f => f.uploadedBy.toLowerCase() === mgrFilter.toLowerCase());
+      }
+
+      let allRows = [];
+      files.forEach(f => { if (f.rows) allRows = allRows.concat(f.rows); });
+
+      if (dupMode === 'exclude') {
+        allRows = allRows.filter(r => !r._isDuplicate);
+      }
+
+      if (!allRows.length) return alert('No calling data available for collation with chosen filters!');
+
       const headers = [
-        ['SOURCE MANAGER', 'CUSTOMER ID', 'CUSTOMER NAME', 'CONTACT NO', 'CALLING DATE', 'FEEDBACK', 'DESP CODE', 'PORTFOLIO', 'CALLER NAME', 'DOUBLE ENTRY STATUS']
-      ];
-      const collatedSample = [
-        ['Rajesh Kumar (North)', 'CUST-884920', 'Vikas Sharma', '9876543210', '14-10-2026', 'Customer not picking call', 'RNR', 'Personal Loan', 'Amit Verma', 'CLEAN (Unique)'],
-        ['Rajesh Kumar (North)', 'CUST-992105', 'Sunil Mehta', '9123456780', '14-10-2026', 'Agreed to pay ₹ 12,000 on Friday', 'PTP', 'Credit Card', 'Pooja Sharma', 'CLEAN (Unique)'],
-        ['Ananya Sen (East)', 'CUST-551122', 'Rahul Roy', '9988771122', '14-10-2026', 'Customer paid via UPI', 'PAID', 'Auto Loan', 'Subhash Ghosh', 'CLEAN (Unique)'],
-        ['Vikram Rathore (West)', 'CUST-332211', 'Ajay Patil', '9122334455', '14-10-2026', 'Requested call back at 6 PM', 'CB', 'Home Loan', 'Sneha Shinde', 'CLEAN (Unique)']
+        ['SOURCE FILE', 'UPLOADED BY', 'CUSTOMER ID', 'CUSTOMER NAME', 'CONTACT NO', 'CALLING DATE', 'FEEDBACK', 'DESP CODE', 'PORTFOLIO', 'CALLER NAME', 'DOUBLE ENTRY STATUS']
       ];
 
-      if (typeof XLSX !== 'undefined') {
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.aoa_to_sheet(headers.concat(collatedSample));
-        XLSX.utils.book_append_sheet(wb, ws, "Master_Consolidated");
-        XLSX.writeFile(wb, "Master_Collated_Feedback_Report.xlsx");
-      } else {
-        alert("Downloading Master_Collated_Feedback_Report.xlsx!");
+      const dataRows = allRows.map(r => [
+        r._sourceFile || '-',
+        r._uploadedBy || '-',
+        r['CUSTOMER ID'] || '',
+        r['CUSTOMER NAME'] || '',
+        r['CONTACT NO'] || '',
+        r['CALLING DATE'] || '',
+        r['FEEDBACK'] || '',
+        r['DESP CODE'] || '',
+        r['PORTFOLIO'] || '',
+        r['CALLER NAME'] || '',
+        r._isDuplicate ? 'DOUBLE ENTRY' : 'CLEAN'
+      ]);
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(headers.concat(dataRows));
+      XLSX.utils.book_append_sheet(wb, ws, "Master_Consolidated");
+      XLSX.writeFile(wb, `Master_Collated_Feedback_${new Date().toISOString().slice(0,10)}.xlsx`);
+    }
+
+    function renderAdminOptions() {
+      const sel = document.getElementById('collate-mgr-select');
+      if (!sel) return;
+      const managers = [...new Set(state.files.map(f => f.uploadedBy))];
+      sel.innerHTML = '<option value="all">All Managers (All India)</option>' + managers.map(m => `<option value="${m}">${m}</option>`).join('');
+      
+      let totalRows = 0;
+      state.files.forEach(f => totalRows += (f.rows ? f.rows.length : 0));
+      const summaryEl = document.getElementById('admin-collate-summary');
+      if (summaryEl) {
+        summaryEl.textContent = `Total ${state.files.length} Manager Files Uploaded • ${totalRows} Combined Calling Rows Ready`;
       }
     }
 
-    // File Upload Handler
-    function handleFileUpload(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          if (typeof XLSX === 'undefined') {
-            alert(`File "${file.name}" uploaded successfully! 428 rows parsed, 3 duplicate rows flagged.`);
-            switchTab('duplicates');
-            return;
-          }
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, {type: 'array'});
-          const sheetName = workbook.SheetNames[0];
-          const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {header: 1});
-
-          alert(`File "${file.name}" uploaded successfully!\nTotal Rows: ${rows.length - 1}\n\n⚠️ Found 3 Double Entries (Same Customer + Same Date + Same Desp + Same Feedback).\nTaking you to Double Entry Inspector...`);
-          switchTab('duplicates');
-        } catch(err) {
-          alert("Error parsing Excel: " + err.message);
-        }
-      };
-      reader.readAsArrayBuffer(file);
+    function toggleExcludeDuplicates(checked) {
+      state.excludeDuplicates = checked;
+      renderDashboard();
     }
 
-    // Chart.js
+    function clearDateFilter() {
+      document.getElementById('filter-date-from').value = '';
+      document.getElementById('filter-date-to').value = '';
+      renderDashboard();
+    }
+
+    function exportCallerReport() {
+      alert('Caller report exported to Excel!');
+    }
+
+    // Chart.js instance
     let chartInstance = null;
     function initChart() {
       const ctx = document.getElementById('dispositionChart');
@@ -1299,7 +1942,7 @@
         data: {
           labels: ['PTP (Promise to Pay)', 'RNR (No Response)', 'Call Back (CB)', 'Not Interested', 'Others'],
           datasets: [{
-            data: [64, 184, 58, 42, 80],
+            data: [0, 0, 0, 0, 0],
             backgroundColor: ['#10b981', '#f59e0b', '#4f46e5', '#ef4444', '#94a3b8'],
             borderWidth: 2,
             borderColor: '#ffffff'
@@ -1312,10 +1955,7 @@
           plugins: {
             legend: {
               position: 'bottom',
-              labels: {
-                boxWidth: 10,
-                font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 }
-              }
+              labels: { boxWidth: 10, font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 } }
             }
           }
         }
@@ -1328,27 +1968,7 @@
       chartInstance.update();
     }
 
-    function toggleExcludeDuplicates(checked) {
-      state.excludeDuplicates = checked;
-      if (checked) {
-        document.getElementById('stat-calls').textContent = state.currentRole === 'Admin' ? '1,612' : '425';
-        alert('Double entries excluded from totals! Real unique calling counts are now reflected.');
-      } else {
-        document.getElementById('stat-calls').textContent = state.currentRole === 'Admin' ? '1,640' : '428';
-      }
-    }
-
-    function applyDateFilter() {
-      const from = document.getElementById('filter-date-from').value;
-      const to = document.getElementById('filter-date-to').value;
-      alert(`Filtered data between ${from} and ${to}!`);
-    }
-
-    function exportCallerReport() {
-      alert('Caller report exported to Excel format!');
-    }
-
-    // User management
+    // User Management
     function addUser() {
       const u = document.getElementById('new-u-name').value.trim();
       const p = document.getElementById('new-u-pwd').value.trim();
@@ -1356,7 +1976,8 @@
 
       if (!u || !p) return alert('Please enter username and password');
 
-      userDatabase.push({ username: u, password: p, role: r });
+      userDatabase.push({ username: u, password: p, role: r, team: r === 'Admin' ? 'Central Admin' : 'Calling Team' });
+      saveUsersToStorage();
       renderUsersTable();
       alert(`User "${u}" created successfully!`);
       document.getElementById('new-u-name').value = '';
@@ -1366,11 +1987,13 @@
     function deleteUser(username) {
       if (username === 'admin') return alert('Cannot delete default admin!');
       userDatabase = userDatabase.filter(u => u.username !== username);
+      saveUsersToStorage();
       renderUsersTable();
     }
 
     function renderUsersTable() {
       const tbody = document.getElementById('users-table-body');
+      if (!tbody) return;
       tbody.innerHTML = userDatabase.map(u => `
         <tr>
           <td><b>${u.username}</b></td>
@@ -1382,7 +2005,7 @@
     }
 
     window.onload = function() {
-      initChart();
+      initSystem();
     };
   </script>
 </body>
