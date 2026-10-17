@@ -1153,9 +1153,8 @@ CREATE TABLE IF NOT EXISTS feedback_records (
       onlyShowDuplicates: false
     };
 
-    // User accounts repository
+    // User accounts repository (Managers list; Admin is system protected)
     let userDatabase = [
-      { username: 'admin', password: 'admin123', role: 'Admin', team: 'Central Admin' },
       { username: 'Test', password: 'Test@123', role: 'Manager', team: 'Operations Team' },
       { username: 'manager', password: 'mgr123', role: 'Manager', team: 'Calling Team' }
     ];
@@ -1168,16 +1167,12 @@ CREATE TABLE IF NOT EXISTS feedback_records (
         try {
           const parsed = JSON.parse(savedUsers);
           if (Array.isArray(parsed) && parsed.length) {
-            userDatabase = parsed;
+            userDatabase = parsed.filter(u => u.username.toLowerCase() !== 'admin');
           }
         } catch(e){}
       }
-      if (!userDatabase.some(u => u.username.toLowerCase() === 'admin')) {
-        userDatabase.unshift({ username: 'admin', password: 'admin123', role: 'Admin', team: 'Central Admin' });
-      }
-      if (!userDatabase.some(u => u.username.toLowerCase() === 'test')) {
-        userDatabase.push({ username: 'Test', password: 'Test@123', role: 'Manager', team: 'Operations Team' });
-      }
+      userDatabase = userDatabase.filter(u => u.username.toLowerCase() !== 'admin');
+      saveUsersToStorage();
 
       // Load saved files
       const savedFiles = localStorage.getItem(STORAGE_KEY_FILES);
@@ -2336,8 +2331,7 @@ CREATE TABLE IF NOT EXISTS feedback_records (
     }
 
     function deleteUser(username) {
-      if (username === 'admin') return alert('Cannot delete default admin!');
-      userDatabase = userDatabase.filter(u => u.username !== username);
+      userDatabase = userDatabase.filter(u => u.username.toLowerCase() !== username.toLowerCase());
       saveUsersToStorage();
       renderUsersTable();
     }
@@ -2345,12 +2339,17 @@ CREATE TABLE IF NOT EXISTS feedback_records (
     function renderUsersTable() {
       const tbody = document.getElementById('users-table-body');
       if (!tbody) return;
-      tbody.innerHTML = userDatabase.map(u => `
+      const displayUsers = userDatabase.filter(u => u.username.toLowerCase() !== 'admin');
+      if (displayUsers.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:18px; color:var(--text-muted);">No managers registered yet. Use the form above to add manager accounts.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = displayUsers.map(u => `
         <tr>
           <td><b>${u.username}</b></td>
-          <td><code>${u.password}</code></td>
+          <td><code>••••••••</code></td>
           <td><span class="role-tag ${u.role === 'Admin' ? 'role-admin' : 'role-manager'}">${u.role}</span></td>
-          <td>${u.username === 'admin' ? '<span style="font-size:11px; color:var(--text-muted);">Default Admin</span>' : `<button class="btn btn-rose" style="padding:4px 8px; font-size:11px;" onclick="deleteUser('${u.username}')">Delete</button>`}</td>
+          <td><button class="btn btn-rose" style="padding:4px 8px; font-size:11px;" onclick="deleteUser('${u.username}')">Delete</button></td>
         </tr>
       `).join('');
     }
