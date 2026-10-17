@@ -495,12 +495,17 @@
       <!-- Date & Scope Filter Bar -->
       <div style="background:#fff; border:1px solid var(--border); border-radius:var(--radius); padding:14px 20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-          <span style="font-size:13px; font-weight:700;">📅 Calling Date:</span>
+          <span style="font-size:13px; font-weight:700;">👤 Manager:</span>
+          <select id="filter-manager-select" class="login-input" style="width:auto; padding:6px 10px; margin:0; font-size:12px; font-weight:600;" onchange="renderDashboard()">
+            <option value="">All Managers (Consolidated)</option>
+          </select>
+
+          <span style="font-size:13px; font-weight:700;">📅 Date:</span>
           <input type="date" class="login-input" style="width:auto; padding:6px 10px; margin:0; font-size:12px;" id="filter-date-from" onchange="renderDashboard()">
           <span style="font-size:12px; color:var(--text-muted);">to</span>
           <input type="date" class="login-input" style="width:auto; padding:6px 10px; margin:0; font-size:12px;" id="filter-date-to" onchange="renderDashboard()">
           <button class="btn btn-outline" style="padding:6px 12px; font-size:12px;" onclick="renderDashboard()">Filter</button>
-          <button class="btn btn-outline" style="padding:6px 12px; font-size:12px;" onclick="clearDateFilter()">Clear Filter</button>
+          <button class="btn btn-outline" style="padding:6px 12px; font-size:12px;" onclick="clearDateFilter()">Clear</button>
         </div>
 
         <div style="display:flex; align-items:center; gap:12px;">
@@ -1183,20 +1188,18 @@
       return String(val).trim();
     }
 
-    // Double Entry Detection Engine (Rule: Same Customer + Same Date + Same Desp + Same Feedback)
+    // Double Entry Detection Engine (Rule: Same Customer ID/Contact + Same Calling Date)
     function detectDoubleEntries(rows) {
       const keyCount = {};
       const keyFirstSeen = {};
 
-      // 1. Group occurrences
+      // 1. Group occurrences by Customer ID (or Contact) + Calling Date
       rows.forEach((r, idx) => {
         const custId = String(r['CUSTOMER ID'] || r['CONTACT NO'] || '').trim().toLowerCase();
         const date = String(r['CALLING DATE'] || '').trim().toLowerCase();
-        const desp = String(r['DESP CODE'] || '').trim().toUpperCase();
-        const feedback = String(r['FEEDBACK'] || '').trim().toLowerCase();
 
-        if (custId && date && desp) {
-          const key = `${custId}___${date}___${desp}___${feedback}`;
+        if (custId && date) {
+          const key = `${custId}___${date}`;
           keyCount[key] = (keyCount[key] || 0) + 1;
           if (!keyFirstSeen[key]) keyFirstSeen[key] = [];
           keyFirstSeen[key].push(idx);
@@ -1210,9 +1213,7 @@
       rows.forEach((r, idx) => {
         const custId = String(r['CUSTOMER ID'] || r['CONTACT NO'] || '').trim().toLowerCase();
         const date = String(r['CALLING DATE'] || '').trim().toLowerCase();
-        const desp = String(r['DESP CODE'] || '').trim().toUpperCase();
-        const feedback = String(r['FEEDBACK'] || '').trim().toLowerCase();
-        const key = `${custId}___${date}___${desp}___${feedback}`;
+        const key = `${custId}___${date}`;
 
         if (keyCount[key] > 1) {
           keyOccurrence[key] = (keyOccurrence[key] || 0) + 1;
@@ -1221,7 +1222,7 @@
 
           r._isDuplicate = true;
           r._dupTag = `⚠️ Double Entry (Call ${currInstance}/${totalInstances})`;
-          r._dupReason = 'Same Customer + Same Date + Same Desp + Same Feedback';
+          r._dupReason = `Repeated Call to Customer on same date (${date})`;
           r._sourceRow = r._sourceRow || (idx + 2);
 
           duplicateList.push(r);
@@ -1345,24 +1346,27 @@
     // Get Active Records for Current Role & Filters
     function getActiveDataset() {
       let activeFiles = state.files;
-      if (state.currentRole !== 'Admin') {
-        activeFiles = state.files.filter(f => f.uploadedBy.toLowerCase() === state.currentUser.toLowerCase());
-      }
 
       let allRows = [];
       activeFiles.forEach(f => {
         if (f.rows) allRows = allRows.concat(f.rows);
       });
 
+      // Filter by Selected Manager
+      const mgrSelect = document.getElementById('filter-manager-select');
+      const selectedMgr = mgrSelect ? mgrSelect.value.trim().toLowerCase() : '';
+      if (selectedMgr) {
+        allRows = allRows.filter(r => String(r['MANAGER NAME'] || '').trim().toLowerCase() === selectedMgr);
+      }
+
       // Date Range Filter
-      const fromDate = document.getElementById('filter-date-from').value;
-      const toDate = document.getElementById('filter-date-to').value;
+      const fromDate = document.getElementById('filter-date-from') ? document.getElementById('filter-date-from').value : '';
+      const toDate = document.getElementById('filter-date-to') ? document.getElementById('filter-date-to').value : '';
 
       if (fromDate || toDate) {
         allRows = allRows.filter(r => {
           const dStr = r['CALLING DATE'];
           if (!dStr) return true;
-          // compare standard ISO strings
           return true;
         });
       }
@@ -1372,6 +1376,25 @@
 
     // Render Live Dashboard & Analytics
     function renderDashboard() {
+      // Populate Manager Dropdown options
+      const mgrSelect = document.getElementById('filter-manager-select');
+      if (mgrSelect) {
+        const currentVal = mgrSelect.value;
+        const allMgrs = new Set();
+        state.files.forEach(f => {
+          (f.rows || []).forEach(r => {
+            const m = String(r['MANAGER NAME'] || '').trim();
+            if (m) allMgrs.add(m);
+          });
+        });
+        const sortedMgrs = Array.from(allMgrs).sort();
+        let optionsHtml = '<option value="">All Managers (Consolidated)</option>';
+        sortedMgrs.forEach(m => {
+          optionsHtml += `<option value="${m}" ${currentVal.toLowerCase() === m.toLowerCase() ? 'selected' : ''}>${m}</option>`;
+        });
+        mgrSelect.innerHTML = optionsHtml;
+      }
+
       const data = getActiveDataset();
       const rows = data.rows;
 
