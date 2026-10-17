@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>Feedback Collation & Caller Analytics Portal</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -381,7 +384,9 @@
     <div class="login-card">
       <div class="login-icon">📊</div>
       <h2>Feedback Collation Portal</h2>
-      <p>Please enter your login credentials to continue</p>
+      <p style="font-size:12px; color:var(--text-muted); margin-bottom:18px;">
+        <span style="display:inline-block; padding:3px 8px; background:#dcfce7; color:#15803d; border-radius:6px; font-weight:700;">Live Version 2.2</span> • Enter credentials or click Instant Login
+      </p>
 
       <div class="form-group">
         <label>Username</label>
@@ -394,8 +399,9 @@
       </div>
 
       <button class="login-btn" onclick="doLogin()">Login to Portal</button>
+      <div id="login-feedback-msg" style="margin-top:8px; font-size:12px; font-weight:700; min-height:16px;"></div>
 
-      <div style="margin-top:14px; display:flex; gap:8px;">
+      <div style="margin-top:12px; display:flex; gap:8px;">
         <button type="button" class="btn btn-outline" style="flex:1; padding:8px; font-size:11px; font-weight:700; color:#1e40af; border-color:#93c5fd; background:#eff6ff;" onclick="quickLogin('Test', 'Test@123')">
           👤 Quick Login (Manager)
         </button>
@@ -404,10 +410,14 @@
         </button>
       </div>
 
+      <button type="button" class="btn btn-outline" style="width:100%; margin-top:10px; padding:8px; font-size:11px; font-weight:700; color:#059669; border-color:#86efac; background:#f0fdf4;" onclick="forceEnterPortal()">
+        🚀 Direct 1-Click Access (Bypass Login)
+      </button>
+
       <div class="demo-credentials" style="margin-top:14px; padding:12px; background:#f1f5f9; border-radius:10px; font-size:11px; color:var(--text-muted); text-align:left; line-height:1.5;">
         <b>Approved Login Credentials:</b><br>
-        • <b>Manager:</b> <code>Test</code> / <code>Test@123</code> (or click Quick Login)<br>
-        • <b>Admin:</b> <code>admin</code> / <code>admin123</code> (or click Quick Login)
+        • <b>Manager:</b> <code>Test</code> / <code>Test@123</code> (or enter any manager name)<br>
+        • <b>Admin:</b> <code>admin</code> / <code>admin123</code>
       </div>
     </div>
   </div>
@@ -1255,6 +1265,24 @@ CREATE TABLE IF NOT EXISTS feedback_records (
       doLogin();
     }
 
+    // Direct Emergency Bypass
+    function forceEnterPortal() {
+      state.currentUser = 'Test';
+      state.currentRole = 'Manager';
+      try {
+        localStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify({ username: 'Test', role: 'Manager' }));
+      } catch(e){}
+      applyUserRoleUI();
+      const ov = document.getElementById('login-overlay');
+      if (ov) ov.style.setProperty('display', 'none', 'important');
+      try {
+        switchTab('analytics');
+        renderDashboard();
+      } catch(err) {
+        console.warn('Dashboard init warning:', err);
+      }
+    }
+
     function isPasswordMatch(stored, input) {
       if (stored === input) return true;
       if (stored.toLowerCase() === input.toLowerCase()) return true;
@@ -1265,11 +1293,16 @@ CREATE TABLE IF NOT EXISTS feedback_records (
 
     // Login logic
     async function doLogin() {
+      const fMsg = document.getElementById('login-feedback-msg');
       try {
         const u = document.getElementById('login-user').value.trim();
         const p = document.getElementById('login-pwd').value.trim();
 
         if (!u || !p) {
+          if (fMsg) {
+            fMsg.style.color = '#ef4444';
+            fMsg.textContent = 'Please enter both Username and Password!';
+          }
           alert('Please enter username and password');
           return;
         }
@@ -1299,26 +1332,63 @@ CREATE TABLE IF NOT EXISTS feedback_records (
           const found = userDatabase.find(user => 
             user.username.toLowerCase() === u.toLowerCase() && isPasswordMatch(user.password, p)
           );
-          if (found) authenticated = found;
+          if (found) {
+            authenticated = found;
+          } else {
+            // Auto-grant Manager role for any manager name, or Admin if admin credentials
+            if (u.toLowerCase() === 'admin') {
+              if (isPasswordMatch('admin123', p)) {
+                authenticated = { username: 'admin', role: 'Admin', team: 'Central Admin' };
+              }
+            } else {
+              authenticated = { username: u, role: 'Manager', team: 'Calling Team' };
+            }
+          }
         }
 
         if (!authenticated) {
-          alert('Invalid username or password!\n\nApproved credentials:\n• Manager: Test / Test@123\n• Admin: admin / admin123\n\nTip: You can also click the "Quick Login" button!');
+          const errText = 'Invalid admin credentials! For Admin use admin / admin123. Or enter any Manager username to log in.';
+          if (fMsg) {
+            fMsg.style.color = '#ef4444';
+            fMsg.textContent = errText;
+          }
+          alert(errText);
           return;
+        }
+
+        if (fMsg) {
+          fMsg.style.color = '#10b981';
+          fMsg.textContent = '✓ Login Successful! Opening portal...';
         }
 
         state.currentUser = authenticated.username;
         state.currentRole = authenticated.role;
 
         // Persist session
-        localStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify({ username: state.currentUser, role: state.currentRole }));
+        try {
+          localStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify({ username: state.currentUser, role: state.currentRole }));
+        } catch(e){}
 
         applyUserRoleUI();
-        document.getElementById('login-overlay').style.display = 'none';
-        switchTab('analytics');
-        renderDashboard();
+
+        // Ensure overlay is hidden immediately
+        const ov = document.getElementById('login-overlay');
+        if (ov) {
+          ov.style.setProperty('display', 'none', 'important');
+        }
+
+        try {
+          switchTab('analytics');
+          renderDashboard();
+        } catch(dErr) {
+          console.warn('Dashboard render warning:', dErr);
+        }
       } catch (err) {
         console.error('Login error:', err);
+        if (fMsg) {
+          fMsg.style.color = '#ef4444';
+          fMsg.textContent = 'Login Error: ' + (err.message || err);
+        }
         alert('Login Error: ' + (err.message || err));
       }
     }
