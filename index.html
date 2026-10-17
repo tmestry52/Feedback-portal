@@ -683,6 +683,9 @@
             <button class="btn btn-emerald" onclick="exportFilteredRecords()" style="font-size:12px; padding:8px 14px;">
               📥 Export Table (.xlsx)
             </button>
+            <button class="btn btn-purple" onclick="downloadMasterCsvFile()" style="font-size:12px; padding:8px 14px; background:#4f46e5; color:#fff;">
+              📄 Download Master CSV (.csv)
+            </button>
           </div>
         </div>
 
@@ -1831,6 +1834,61 @@ CREATE TABLE IF NOT EXISTS feedback_records (
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Calling Records');
       XLSX.writeFile(wb, `Calling_Records_${state.currentUser}_${new Date().toISOString().slice(0,10)}.xlsx`);
+    }
+
+    // Export Calling Records directly as Clean Plain-Text CSV (.csv)
+    function downloadMasterCsvFile() {
+      const data = getActiveDataset();
+      const allRows = data.rows || [];
+      if (!allRows.length) {
+        alert('No records available to export to CSV.');
+        return;
+      }
+
+      const headers = [
+        'CUSTOMER ID',
+        'CUSTOMER NAME',
+        'CONTACT NO',
+        'CALLING DATE',
+        'FEEDBACK',
+        'DESP CODE',
+        'PORTFOLIO',
+        'MANAGER NAME',
+        'CALLER NAME',
+        'DOUBLE ENTRY STATUS'
+      ];
+
+      function escapeCsv(val) {
+        if (val === undefined || val === null) return '""';
+        return '"' + String(val).replace(/"/g, '""').replace(/[\r\n]+/g, ' ') + '"';
+      }
+
+      const csvLines = [headers.map(h => '"' + h + '"').join(',')];
+
+      allRows.forEach(r => {
+        csvLines.push([
+          escapeCsv(r['CUSTOMER ID']),
+          escapeCsv(r['CUSTOMER NAME']),
+          escapeCsv(r['CONTACT NO']),
+          escapeCsv(r['CALLING DATE']),
+          escapeCsv(r['FEEDBACK']),
+          escapeCsv(r['DESP CODE']),
+          escapeCsv(r['PORTFOLIO']),
+          escapeCsv(r['MANAGER NAME']),
+          escapeCsv(r['CALLER NAME']),
+          escapeCsv(r._isDuplicate ? (r._dupTag || 'Double Entry') : 'Unique')
+        ].join(','));
+      });
+
+      const blob = new Blob(["\uFEFF" + csvLines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `calling_records_${state.currentUser}_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     }
 
     // Render Duplicates Tab
