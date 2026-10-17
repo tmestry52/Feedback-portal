@@ -454,7 +454,7 @@
       <button class="tab-btn" onclick="switchTab('upload')" id="btn-tab-upload">
         📤 Upload Feedback Excel
       </button>
-      <button class="tab-btn" onclick="switchTab('backup')" id="btn-tab-backup">
+      <button class="tab-btn" onclick="switchTab('backup')" id="btn-tab-backup" style="display:none;">
         💾 Data Backup & Restore
       </button>
       <button class="tab-btn" onclick="switchTab('template')" id="btn-tab-template">
@@ -1128,10 +1128,12 @@
       if (state.currentRole === 'Admin') {
         document.getElementById('btn-tab-admin-collate').style.display = 'inline-flex';
         document.getElementById('btn-tab-manage-users').style.display = 'inline-flex';
+        document.getElementById('btn-tab-backup').style.display = 'inline-flex';
         document.getElementById('scope-indicator').textContent = 'Admin Scope: All Managers Consolidated View';
       } else {
         document.getElementById('btn-tab-admin-collate').style.display = 'none';
         document.getElementById('btn-tab-manage-users').style.display = 'none';
+        document.getElementById('btn-tab-backup').style.display = 'none';
         document.getElementById('scope-indicator').textContent = `Manager Scope: ${state.currentUser} (Team View)`;
       }
     }
@@ -1144,6 +1146,11 @@
 
     // Tabs
     function switchTab(tabId) {
+      if ((tabId === 'backup' || tabId === 'admin-collate' || tabId === 'manage-users') && state.currentRole !== 'Admin') {
+        alert('Access Restricted: This feature is only available for Central Admin.');
+        return;
+      }
+
       document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
 
