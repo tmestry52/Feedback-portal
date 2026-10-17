@@ -422,10 +422,6 @@
       </div>
 
       <div style="display:flex; align-items:center; gap:12px;">
-        <button class="btn btn-purple" style="padding:6px 14px; font-size:12px;" onclick="exportFullDataBackup()">
-          💾 Export Data Backup
-        </button>
-
         <div class="user-badge" id="user-badge">
           <span class="role-tag role-manager" id="badge-role">Manager</span>
           <span style="font-size:13px; font-weight:700;" id="badge-username">Test</span>
@@ -1732,10 +1728,29 @@
     }
 
     function removeFile(fileId) {
-      if (!confirm('Are you sure you want to remove this file from portal?')) return;
+      const target = state.files.find(f => f.id === fileId);
+      if (!target) return;
+
+      if (state.currentRole !== 'Admin' && target.uploadedBy.toLowerCase() !== state.currentUser.toLowerCase()) {
+        alert('You can only remove files uploaded by your own team!');
+        return;
+      }
+
+      const totalRows = target.rows ? target.rows.length : 0;
+      if (!confirm(`Are you sure you want to delete "${target.fileName}"?\n\n⚠️ This will permanently remove all ${totalRows} records from the entire portal, Admin view, and future backups.`)) {
+        return;
+      }
+
+      // 1. Remove from state
       state.files = state.files.filter(f => f.id !== fileId);
+
+      // 2. Persist updated state to browser storage
       saveFilesToStorage();
+
+      // 3. Immediately re-render dashboards and tables
       renderDashboard();
+
+      alert(`✅ File "${target.fileName}" (${totalRows} rows) has been completely removed from the portal and backup storage.`);
     }
 
     function clearAllFiles() {
