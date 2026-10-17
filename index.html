@@ -384,41 +384,22 @@
     <div class="login-card">
       <div class="login-icon">📊</div>
       <h2>Feedback Collation Portal</h2>
-      <p style="font-size:12px; color:var(--text-muted); margin-bottom:18px;">
-        <span style="display:inline-block; padding:3px 8px; background:#dcfce7; color:#15803d; border-radius:6px; font-weight:700;">Live Version 2.2</span> • Enter credentials or click Instant Login
+      <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px;">
+        Please enter your credentials to access the portal
       </p>
 
       <div class="form-group">
         <label>Username</label>
-        <input type="text" id="login-user" class="login-input" placeholder="e.g. Test or admin" value="Test" />
+        <input type="text" id="login-user" class="login-input" placeholder="Enter username" />
       </div>
 
       <div class="form-group">
         <label>Password</label>
-        <input type="password" id="login-pwd" class="login-input" placeholder="Enter password" value="Test@123" onkeypress="if(event.key==='Enter') doLogin()" />
+        <input type="password" id="login-pwd" class="login-input" placeholder="Enter password" onkeypress="if(event.key==='Enter') doLogin()" />
       </div>
 
-      <button class="login-btn" onclick="doLogin()">Login to Portal</button>
-      <div id="login-feedback-msg" style="margin-top:8px; font-size:12px; font-weight:700; min-height:16px;"></div>
-
-      <div style="margin-top:12px; display:flex; gap:8px;">
-        <button type="button" class="btn btn-outline" style="flex:1; padding:8px; font-size:11px; font-weight:700; color:#1e40af; border-color:#93c5fd; background:#eff6ff;" onclick="quickLogin('Test', 'Test@123')">
-          👤 Quick Login (Manager)
-        </button>
-        <button type="button" class="btn btn-outline" style="flex:1; padding:8px; font-size:11px; font-weight:700; color:#6b21a8; border-color:#d8b4fe; background:#faf5ff;" onclick="quickLogin('admin', 'admin123')">
-          🛡️ Quick Login (Admin)
-        </button>
-      </div>
-
-      <button type="button" class="btn btn-outline" style="width:100%; margin-top:10px; padding:8px; font-size:11px; font-weight:700; color:#059669; border-color:#86efac; background:#f0fdf4;" onclick="forceEnterPortal()">
-        🚀 Direct 1-Click Access (Bypass Login)
-      </button>
-
-      <div class="demo-credentials" style="margin-top:14px; padding:12px; background:#f1f5f9; border-radius:10px; font-size:11px; color:var(--text-muted); text-align:left; line-height:1.5;">
-        <b>Approved Login Credentials:</b><br>
-        • <b>Manager:</b> <code>Test</code> / <code>Test@123</code> (or enter any manager name)<br>
-        • <b>Admin:</b> <code>admin</code> / <code>admin123</code>
-      </div>
+      <button class="login-btn" onclick="doLogin()">Login</button>
+      <div id="login-feedback-msg" style="margin-top:10px; font-size:12px; font-weight:700; min-height:16px;"></div>
     </div>
   </div>
 
@@ -1347,7 +1328,7 @@ CREATE TABLE IF NOT EXISTS feedback_records (
         }
 
         if (!authenticated) {
-          const errText = 'Invalid admin credentials! For Admin use admin / admin123. Or enter any Manager username to log in.';
+          const errText = 'Invalid credentials. Please enter a valid username and password.';
           if (fMsg) {
             fMsg.style.color = '#ef4444';
             fMsg.textContent = errText;
@@ -1420,7 +1401,10 @@ CREATE TABLE IF NOT EXISTS feedback_records (
     function doLogout() {
       localStorage.removeItem(STORAGE_KEY_SESSION);
       document.getElementById('login-overlay').style.display = 'flex';
+      document.getElementById('login-user').value = '';
       document.getElementById('login-pwd').value = '';
+      const fMsg = document.getElementById('login-feedback-msg');
+      if (fMsg) fMsg.textContent = '';
     }
 
     // Tabs
