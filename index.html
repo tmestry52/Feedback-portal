@@ -1174,7 +1174,18 @@ CREATE TABLE IF NOT EXISTS feedback_records (
       // Load saved users
       const savedUsers = localStorage.getItem(STORAGE_KEY_USERS);
       if (savedUsers) {
-        try { userDatabase = JSON.parse(savedUsers); } catch(e){}
+        try {
+          const parsed = JSON.parse(savedUsers);
+          if (Array.isArray(parsed) && parsed.length) {
+            userDatabase = parsed;
+          }
+        } catch(e){}
+      }
+      if (!userDatabase.some(u => u.username.toLowerCase() === 'admin')) {
+        userDatabase.unshift({ username: 'admin', password: 'admin123', role: 'Admin', team: 'Central Admin' });
+      }
+      if (!userDatabase.some(u => u.username.toLowerCase() === 'test')) {
+        userDatabase.push({ username: 'Test', password: 'Test@123', role: 'Manager', team: 'Operations Team' });
       }
 
       // Load saved files
@@ -1254,74 +1265,85 @@ CREATE TABLE IF NOT EXISTS feedback_records (
 
     // Login logic
     async function doLogin() {
-      const u = document.getElementById('login-user').value.trim();
-      const p = document.getElementById('login-pwd').value.trim();
+      try {
+        const u = document.getElementById('login-user').value.trim();
+        const p = document.getElementById('login-pwd').value.trim();
 
-      if (!u || !p) {
-        alert('Please enter username and password');
-        return;
-      }
+        if (!u || !p) {
+          alert('Please enter username and password');
+          return;
+        }
 
-      let authenticated = null;
+        let authenticated = null;
 
-      // 1. Only query local backend server if running on localhost / 127.0.0.1
-      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      if (isLocal) {
-        try {
-          const res = await fetch('/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: u, password: p })
-          });
-          if (res.ok) {
-            const data = await res.json();
-            if (data.success) {
-              authenticated = { username: data.username, role: data.role, team: data.role === 'Admin' ? 'Central Admin' : 'Calling Team' };
+        // 1. Only query local backend server if running on localhost / 127.0.0.1
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        if (isLocal) {
+          try {
+            const res = await fetch('/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ username: u, password: p })
+            });
+            if (res.ok) {
+              const data = await res.json();
+              if (data.success) {
+                authenticated = { username: data.username, role: data.role, team: data.role === 'Admin' ? 'Central Admin' : 'Calling Team' };
+              }
             }
-          }
-        } catch(e){}
+          } catch(e){}
+        }
+
+        // 2. Direct client-side authentication (Instant on GitHub Pages)
+        if (!authenticated) {
+          const found = userDatabase.find(user => 
+            user.username.toLowerCase() === u.toLowerCase() && isPasswordMatch(user.password, p)
+          );
+          if (found) authenticated = found;
+        }
+
+        if (!authenticated) {
+          alert('Invalid username or password!\n\nApproved credentials:\n• Manager: Test / Test@123\n• Admin: admin / admin123\n\nTip: You can also click the "Quick Login" button!');
+          return;
+        }
+
+        state.currentUser = authenticated.username;
+        state.currentRole = authenticated.role;
+
+        // Persist session
+        localStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify({ username: state.currentUser, role: state.currentRole }));
+
+        applyUserRoleUI();
+        document.getElementById('login-overlay').style.display = 'none';
+        switchTab('analytics');
+        renderDashboard();
+      } catch (err) {
+        console.error('Login error:', err);
+        alert('Login Error: ' + (err.message || err));
       }
-
-      // 2. Direct client-side authentication (Instant on GitHub Pages)
-      if (!authenticated) {
-        const found = userDatabase.find(user => 
-          user.username.toLowerCase() === u.toLowerCase() && isPasswordMatch(user.password, p)
-        );
-        if (found) authenticated = found;
-      }
-
-      if (!authenticated) {
-        alert('Invalid username or password!\n\nApproved credentials:\n• Manager: Test / Test@123\n• Admin: admin / admin123\n\nTip: You can also click the "Quick Login" button!');
-        return;
-      }
-
-      state.currentUser = authenticated.username;
-      state.currentRole = authenticated.role;
-
-      // Persist session
-      localStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify({ username: state.currentUser, role: state.currentRole }));
-
-      applyUserRoleUI();
-      document.getElementById('login-overlay').style.display = 'none';
-      switchTab('analytics');
-      renderDashboard();
     }
 
     function applyUserRoleUI() {
-      document.getElementById('badge-role').className = 'role-tag ' + (state.currentRole === 'Admin' ? 'role-admin' : 'role-manager');
-      document.getElementById('badge-role').textContent = state.currentRole;
-      document.getElementById('badge-username').textContent = state.currentUser;
+      const badgeRole = document.getElementById('badge-role');
+      if (badgeRole) {
+        badgeRole.className = 'role-tag ' + (state.currentRole === 'Admin' ? 'role-admin' : 'role-manager');
+        badgeRole.textContent = state.currentRole;
+      }
+      const badgeUser = document.getElementById('badge-username');
+      if (badgeUser) badgeUser.textContent = state.currentUser;
+
+      const adminCollate = document.getElementById('btn-tab-admin-collate');
+      const manageUsers = document.getElementById('btn-tab-manage-users');
+      const scopeInd = document.getElementById('scope-indicator');
 
       if (state.currentRole === 'Admin') {
-        document.getElementById('btn-tab-admin-collate').style.display = 'inline-flex';
-        document.getElementById('btn-tab-manage-users').style.display = 'inline-flex';
-        document.getElementById('btn-tab-backup').style.display = 'inline-flex';
-        document.getElementById('scope-indicator').textContent = 'Admin Scope: All Managers Consolidated View';
+        if (adminCollate) adminCollate.style.display = 'inline-flex';
+        if (manageUsers) manageUsers.style.display = 'inline-flex';
+        if (scopeInd) scopeInd.textContent = 'Admin Scope: All Managers Consolidated View';
       } else {
-        document.getElementById('btn-tab-admin-collate').style.display = 'none';
-        document.getElementById('btn-tab-manage-users').style.display = 'none';
-        document.getElementById('btn-tab-backup').style.display = 'none';
-        document.getElementById('scope-indicator').textContent = `Manager Scope: ${state.currentUser} (Team View)`;
+        if (adminCollate) adminCollate.style.display = 'none';
+        if (manageUsers) manageUsers.style.display = 'none';
+        if (scopeInd) scopeInd.textContent = `Manager Scope: ${state.currentUser} (Team View)`;
       }
     }
 
