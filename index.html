@@ -13,6 +13,8 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <!-- Chart.js for data visualization -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <style>
     :root {
@@ -422,6 +424,10 @@
       </div>
 
       <div style="display:flex; align-items:center; gap:12px;">
+        <button id="supabase-status-badge" class="btn btn-outline" style="padding:6px 14px; font-size:12px; font-weight:700; border-radius:10px; cursor:pointer; background:#f0fdf4; color:#15803d; border-color:#86efac;" onclick="openSupabaseConfigModal()">
+          ⚡ Supabase Cloud: Auto-Sync
+        </button>
+
         <div class="user-badge" id="user-badge">
           <span class="role-tag role-manager" id="badge-role">Manager</span>
           <span style="font-size:13px; font-weight:700;" id="badge-username">Test</span>
@@ -449,9 +455,6 @@
       </button>
       <button class="tab-btn" onclick="switchTab('upload')" id="btn-tab-upload">
         📤 Upload Feedback Excel
-      </button>
-      <button class="tab-btn" onclick="switchTab('backup')" id="btn-tab-backup" style="display:none;">
-        💾 Data Backup & Restore
       </button>
       <button class="tab-btn" onclick="switchTab('template')" id="btn-tab-template">
         📥 Template Guide
@@ -748,81 +751,7 @@
       </div>
     </div>
 
-    <!-- ================= TAB 4: DATA BACKUP & RESTORE ================= -->
-    <div class="tab-panel" id="panel-backup">
-      <div class="card">
-        <div class="card-head">
-          <div>
-            <div class="card-title">💾 Data Backup & Restore Center</div>
-            <div class="card-subtitle">Securely export, archive, or restore all calling data, files, and duplicate logs</div>
-          </div>
-          <span class="role-tag role-manager">Protected Storage</span>
-        </div>
-
-        <!-- Backup Action Cards Grid -->
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin-bottom:24px;">
-          
-          <!-- Download Full Backup JSON -->
-          <div style="background:#f8fafc; border:1px solid var(--border); border-radius:14px; padding:20px; display:flex; flex-direction:column; justify-content:space-between; gap:14px;">
-            <div>
-              <div style="font-size:24px; margin-bottom:8px;">📦</div>
-              <div style="font-size:15px; font-weight:800; color:var(--text-main);">Full System Backup (.JSON)</div>
-              <p style="font-size:12px; color:var(--text-muted); margin-top:4px;">
-                Exports complete database snapshot including all uploaded files, raw caller rows, duplicate flags, and user accounts.
-              </p>
-            </div>
-            <button class="btn btn-purple" style="width:100%;" onclick="exportFullDataBackup()">
-              📥 Export System Backup (.json)
-            </button>
-          </div>
-
-          <!-- Export Master Calling Archive Excel -->
-          <div style="background:#f8fafc; border:1px solid var(--border); border-radius:14px; padding:20px; display:flex; flex-direction:column; justify-content:space-between; gap:14px;">
-            <div>
-              <div style="font-size:24px; margin-bottom:8px;">📊</div>
-              <div style="font-size:15px; font-weight:800; color:var(--text-main);">Master Excel Archive (.XLSX)</div>
-              <p style="font-size:12px; color:var(--text-muted); margin-top:4px;">
-                Exports all combined rows from every uploaded file into a unified Excel archive with audit stamps.
-              </p>
-            </div>
-            <button class="btn btn-emerald" style="width:100%;" onclick="exportMasterExcelArchive()">
-              📥 Export Excel Archive (.xlsx)
-            </button>
-          </div>
-
-          <!-- Restore Backup File -->
-          <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:14px; padding:20px; display:flex; flex-direction:column; justify-content:space-between; gap:14px;">
-            <div>
-              <div style="font-size:24px; margin-bottom:8px;">🔄</div>
-              <div style="font-size:15px; font-weight:800; color:#1e40af;">Restore Portal From Backup</div>
-              <p style="font-size:12px; color:#3b82f6; margin-top:4px;">
-                Upload a previously downloaded <code>.json</code> backup file to immediately restore all past data and files.
-              </p>
-            </div>
-            <div>
-              <input type="file" id="backup-restore-input" accept=".json" style="display:none;" onchange="handleRestoreBackup(event)">
-              <button class="btn btn-primary" style="width:100%;" onclick="document.getElementById('backup-restore-input').click()">
-                📂 Select Backup File (.json)
-              </button>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Storage Status Information -->
-        <div style="padding:16px 20px; background:#f1f5f9; border-radius:12px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:12px;">
-          <div>
-            <b>System Storage Status:</b> <span id="storage-status-text">0 Files • 0 Records Stored</span>
-          </div>
-          <div>
-            <b>Last Backup Action:</b> <span id="storage-last-backup">Never</span>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- ================= TAB 5: TEMPLATE GUIDE ================= -->
+    <!-- ================= TAB: TEMPLATE GUIDE ================= -->
     <div class="tab-panel" id="panel-template">
       <div class="card">
         <div class="card-head">
@@ -955,6 +884,69 @@
       </div>
     </div>
 
+    <!-- ================= SUPABASE CLOUD SYNC MODAL ================= -->
+    <div id="supabase-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.7); backdrop-filter:blur(6px); z-index:99999; align-items:center; justify-content:center; padding:20px;">
+      <div style="background:#fff; border-radius:20px; max-width:540px; width:100%; padding:28px; box-shadow:0 25px 50px -12px rgba(15,23,42,0.25); border:1px solid var(--border);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:24px;">⚡</span>
+            <div>
+              <h3 style="font-size:17px; font-weight:800;">Supabase Cloud Database Sync</h3>
+              <p style="font-size:12px; color:var(--text-muted);">Automatically sync and save all managers' data in real time</p>
+            </div>
+          </div>
+          <button onclick="closeSupabaseConfigModal()" style="background:none; border:none; font-size:20px; cursor:pointer;">✕</button>
+        </div>
+
+        <div style="margin-bottom:14px;">
+          <label style="display:block; font-size:12px; font-weight:700; margin-bottom:6px;">Supabase Project URL:</label>
+          <input type="text" id="supabase-input-url" class="login-input" placeholder="https://your-project.supabase.co" style="width:100%; margin:0; font-family:'JetBrains Mono', monospace; font-size:12px;">
+        </div>
+
+        <div style="margin-bottom:16px;">
+          <label style="display:block; font-size:12px; font-weight:700; margin-bottom:6px;">Supabase Anon / Public Key:</label>
+          <input type="password" id="supabase-input-key" class="login-input" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." style="width:100%; margin:0; font-family:'JetBrains Mono', monospace; font-size:12px;">
+        </div>
+
+        <div style="background:#f8fafc; border:1px solid var(--border); border-radius:12px; padding:14px; margin-bottom:18px; font-size:11px; color:#475569; line-height:1.5;">
+          <b>💡 Supabase Table SQL Setup:</b>
+          <p style="margin-top:4px;">Run this in your Supabase SQL Editor if table is not created yet:</p>
+          <pre style="background:#0f172a; color:#38bdf8; padding:8px 10px; border-radius:8px; margin-top:6px; overflow-x:auto; font-family:'JetBrains Mono', monospace; font-size:10px;">
+CREATE TABLE IF NOT EXISTS feedback_records (
+  id BIGSERIAL PRIMARY KEY,
+  customer_id TEXT,
+  customer_name TEXT,
+  contact_no TEXT,
+  calling_date TEXT,
+  feedback TEXT,
+  desp_code TEXT,
+  portfolio TEXT,
+  manager_name TEXT,
+  caller_name TEXT,
+  source_file TEXT,
+  uploaded_by TEXT,
+  is_duplicate BOOLEAN DEFAULT FALSE,
+  duplicate_tag TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);</pre>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button class="btn btn-outline" onclick="closeSupabaseConfigModal()">Cancel</button>
+          <button class="btn btn-emerald" onclick="saveSupabaseConfig()">💾 Save & Connect Supabase</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Syncing Banner -->
+    <div id="sync-progress-banner" style="display:none; position:fixed; bottom:24px; right:24px; background:#0f172a; color:#fff; padding:14px 20px; border-radius:14px; box-shadow:0 12px 30px rgba(0,0,0,0.25); z-index:99999; align-items:center; gap:12px;">
+      <div style="font-size:20px;">⚡</div>
+      <div>
+        <div style="font-size:13px; font-weight:700;" id="sync-progress-title">Syncing with Supabase Cloud...</div>
+        <div style="font-size:11px; color:#94a3b8;" id="sync-progress-sub">Updating calling records in cloud database</div>
+      </div>
+    </div>
+
   </main>
 
   <!-- ================= APPLICATION SCRIPTS ================= -->
@@ -963,6 +955,201 @@
     const STORAGE_KEY_FILES = 'feedback_portal_files_v2';
     const STORAGE_KEY_USERS = 'feedback_portal_users_v2';
     const STORAGE_KEY_SESSION = 'feedback_portal_session_v2';
+    const STORAGE_KEY_SUPABASE_URL = 'feedback_portal_supabase_url_v2';
+    const STORAGE_KEY_SUPABASE_KEY = 'feedback_portal_supabase_key_v2';
+
+    let supabaseClient = null;
+
+    function openSupabaseConfigModal() {
+      const modal = document.getElementById('supabase-modal');
+      const urlInput = document.getElementById('supabase-input-url');
+      const keyInput = document.getElementById('supabase-input-key');
+      if (urlInput) urlInput.value = localStorage.getItem(STORAGE_KEY_SUPABASE_URL) || '';
+      if (keyInput) keyInput.value = localStorage.getItem(STORAGE_KEY_SUPABASE_KEY) || '';
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeSupabaseConfigModal() {
+      const modal = document.getElementById('supabase-modal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function saveSupabaseConfig() {
+      const url = document.getElementById('supabase-input-url').value.trim();
+      const key = document.getElementById('supabase-input-key').value.trim();
+
+      if (!url || !key) {
+        alert('Please enter both Supabase Project URL and Anon Public Key.');
+        return;
+      }
+
+      localStorage.setItem(STORAGE_KEY_SUPABASE_URL, url);
+      localStorage.setItem(STORAGE_KEY_SUPABASE_KEY, key);
+      closeSupabaseConfigModal();
+
+      initSupabase(true);
+    }
+
+    function initSupabase(showSuccessAlert = false) {
+      const url = localStorage.getItem(STORAGE_KEY_SUPABASE_URL) || '';
+      const key = localStorage.getItem(STORAGE_KEY_SUPABASE_KEY) || '';
+
+      const badge = document.getElementById('supabase-status-badge');
+
+      if (!url || !key || typeof supabase === 'undefined') {
+        if (badge) {
+          badge.innerHTML = '⚙️ Connect Supabase';
+          badge.style.background = '#fef3c7';
+          badge.style.color = '#b45309';
+          badge.style.borderColor = '#fde68a';
+        }
+        return false;
+      }
+
+      try {
+        supabaseClient = supabase.createClient(url, key);
+        if (badge) {
+          badge.innerHTML = '🟢 Supabase: Live Sync';
+          badge.style.background = '#f0fdf4';
+          badge.style.color = '#15803d';
+          badge.style.borderColor = '#86efac';
+        }
+        if (showSuccessAlert) {
+          alert('✅ Connected to Supabase Cloud Database successfully!\n\nAll manager feedback uploads will now auto-sync in real time.');
+        }
+        fetchAllFromSupabase();
+        return true;
+      } catch(e) {
+        console.error('Supabase init error:', e);
+        if (badge) {
+          badge.innerHTML = '⚠️ Supabase Error';
+          badge.style.background = '#fee2e2';
+          badge.style.color = '#b91c1c';
+          badge.style.borderColor = '#fca5a5';
+        }
+        return false;
+      }
+    }
+
+    function showSyncBanner(show, title, sub) {
+      const banner = document.getElementById('sync-progress-banner');
+      const t = document.getElementById('sync-progress-title');
+      const s = document.getElementById('sync-progress-sub');
+      if (banner) {
+        banner.style.display = show ? 'flex' : 'none';
+        if (title && t) t.textContent = title;
+        if (sub && s) s.textContent = sub;
+      }
+    }
+
+    // Auto-sync rows to Supabase in batches of 500
+    async function syncRowsToSupabase(rows, fileName) {
+      if (!supabaseClient) {
+        initSupabase();
+      }
+      if (!supabaseClient) {
+        console.warn('Supabase not connected. Storing in local session.');
+        return false;
+      }
+
+      const dbPayload = rows.map(r => ({
+        customer_id: String(r['CUSTOMER ID'] || '').trim(),
+        customer_name: String(r['CUSTOMER NAME'] || '').trim(),
+        contact_no: String(r['CONTACT NO'] || '').trim(),
+        calling_date: String(r['CALLING DATE'] || '').trim(),
+        feedback: String(r['FEEDBACK'] || '').trim(),
+        desp_code: String(r['DESP CODE'] || '').trim(),
+        portfolio: String(r['PORTFOLIO'] || '').trim(),
+        manager_name: String(r['MANAGER NAME'] || '').trim(),
+        caller_name: String(r['CALLER NAME'] || '').trim(),
+        source_file: fileName,
+        uploaded_by: state.currentUser,
+        is_duplicate: !!r._isDuplicate,
+        duplicate_tag: r._dupTag || ''
+      }));
+
+      const CHUNK_SIZE = 500;
+      const totalChunks = Math.ceil(dbPayload.length / CHUNK_SIZE);
+
+      showSyncBanner(true, 'Syncing to Supabase Cloud Database...', `Processing 0 of ${dbPayload.length} rows`);
+
+      try {
+        for (let i = 0; i < totalChunks; i++) {
+          const chunk = dbPayload.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
+          const { error } = await supabaseClient.from('feedback_records').insert(chunk);
+
+          if (error) {
+            console.error('Supabase batch insert error:', error);
+            showSyncBanner(false);
+            alert(`⚠️ Supabase Cloud Sync Note: ${error.message}\n(Ensure "feedback_records" table is created in Supabase SQL Editor)`);
+            return false;
+          }
+
+          const currentCount = Math.min((i + 1) * CHUNK_SIZE, dbPayload.length);
+          showSyncBanner(true, 'Syncing to Supabase Cloud Database...', `Uploaded ${currentCount} / ${dbPayload.length} rows to cloud`);
+        }
+
+        showSyncBanner(true, '✅ Supabase Cloud Sync Complete!', `${dbPayload.length} rows saved into database`);
+        setTimeout(() => showSyncBanner(false), 3000);
+        return true;
+      } catch(err) {
+        console.error('Supabase sync exception:', err);
+        showSyncBanner(false);
+        return false;
+      }
+    }
+
+    // Auto-fetch all managers' records from Supabase
+    async function fetchAllFromSupabase() {
+      if (!supabaseClient) return;
+
+      try {
+        const { data, error } = await supabaseClient
+          .from('feedback_records')
+          .select('*')
+          .order('id', { ascending: false })
+          .limit(20000);
+
+        if (error || !data || data.length === 0) return;
+
+        const fileGroups = {};
+        data.forEach(item => {
+          const fName = item.source_file || 'Supabase_Cloud_Data.xlsx';
+          if (!fileGroups[fName]) {
+            fileGroups[fName] = {
+              id: 'supa_' + fName,
+              fileName: fName,
+              uploadedBy: item.uploaded_by || 'Cloud Sync',
+              uploadTime: new Date(item.created_at || Date.now()).toLocaleString(),
+              rows: [],
+              duplicates: []
+            };
+          }
+          fileGroups[fName].rows.push({
+            'CUSTOMER ID': item.customer_id,
+            'CUSTOMER NAME': item.customer_name,
+            'CONTACT NO': item.contact_no,
+            'CALLING DATE': item.calling_date,
+            'FEEDBACK': item.feedback,
+            'DESP CODE': item.desp_code,
+            'PORTFOLIO': item.portfolio,
+            'MANAGER NAME': item.manager_name,
+            'CALLER NAME': item.caller_name,
+            _isDuplicate: item.is_duplicate,
+            _dupTag: item.duplicate_tag
+          });
+        });
+
+        state.files = Object.values(fileGroups);
+        state.files.forEach(f => {
+          f.duplicates = detectDoubleEntries(f.rows);
+        });
+
+        renderDashboard();
+      } catch(e) {
+        console.warn('Supabase fetch exception:', e);
+      }
+    }
 
     const state = {
       currentUser: 'Test',
@@ -1020,6 +1207,7 @@
       renderDashboard();
       renderUsersTable();
       updateStorageStatus();
+      initSupabase();
     }
 
     function saveFilesToStorage() {
@@ -1330,11 +1518,14 @@
           saveFilesToStorage();
           renderDashboard();
 
+          // Automatically sync all uploaded rows directly to Supabase Cloud
+          syncRowsToSupabase(normalizedRows, file.name);
+
           // Notification and auto-switch to records table
           if (duplicates.length > 0) {
-            alert(`✅ File "${file.name}" uploaded successfully!\n\n📊 Total Rows Loaded: ${normalizedRows.length}\n⚠️ Found ${duplicates.length} Double Entries (Highlighted in Red)!\n\nSwitching to All Records view...`);
+            alert(`✅ File "${file.name}" uploaded successfully!\n\n📊 Total Rows Loaded: ${normalizedRows.length}\n⚠️ Found ${duplicates.length} Double Entries (Highlighted in Red)!\n\nAuto-syncing to Supabase cloud database...`);
           } else {
-            alert(`✅ File "${file.name}" uploaded successfully!\n\n📊 Total Rows Loaded: ${normalizedRows.length}\n✨ All records clean (0 duplicates).\n\nSwitching to All Records view...`);
+            alert(`✅ File "${file.name}" uploaded successfully!\n\n📊 Total Rows Loaded: ${normalizedRows.length}\n✨ All records clean (0 duplicates).\n\nAuto-syncing to Supabase cloud database...`);
           }
           switchTab('records');
 
@@ -1728,29 +1919,10 @@
     }
 
     function removeFile(fileId) {
-      const target = state.files.find(f => f.id === fileId);
-      if (!target) return;
-
-      if (state.currentRole !== 'Admin' && target.uploadedBy.toLowerCase() !== state.currentUser.toLowerCase()) {
-        alert('You can only remove files uploaded by your own team!');
-        return;
-      }
-
-      const totalRows = target.rows ? target.rows.length : 0;
-      if (!confirm(`Are you sure you want to delete "${target.fileName}"?\n\n⚠️ This will permanently remove all ${totalRows} records from the entire portal, Admin view, and future backups.`)) {
-        return;
-      }
-
-      // 1. Remove from state
+      if (!confirm('Are you sure you want to remove this file from portal?')) return;
       state.files = state.files.filter(f => f.id !== fileId);
-
-      // 2. Persist updated state to browser storage
       saveFilesToStorage();
-
-      // 3. Immediately re-render dashboards and tables
       renderDashboard();
-
-      alert(`✅ File "${target.fileName}" (${totalRows} rows) has been completely removed from the portal and backup storage.`);
     }
 
     function clearAllFiles() {
